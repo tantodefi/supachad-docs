@@ -1,0 +1,10 @@
+name: minimal-test
+on:
+  workflow_dispatch:
+  push:
+    branches: [test-minimal]
+jobs:
+  hello:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "hello from $(date)"
