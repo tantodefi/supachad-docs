@@ -1,90 +1,21 @@
-# SPDX-FileCopyrightText: Copyright (c) 2026
-# SPDX-License-Identifier: Apache-2.0
-#
-# deploy-docs — builds the MkDocs Material site and ships it to Cloudflare
-# Pages. `main` deploys to production (docs.supachad.com); every other
-# branch + every PR gets a preview deployment at
-# <branch>.supachad-docs.pages.dev, with the URL posted back to the PR.
-#
-# The build step (`mkdocs build --strict`) doubles as a PR check —
-# broken nav, broken anchors, undeclared assets all fail before we ship.
-
 name: deploy-docs
 
 on:
   push:
     branches: [main]
-  pull_request:
-    types: [opened, synchronize, reopened]
   workflow_dispatch:
 
-permissions:
-  contents: read
-  deployments: write
-  pull-requests: write
-
-# Prod and preview runs in separate concurrency lanes so a long-running
-# PR build can't cancel a freshly-merged main deploy.
-concurrency:
-  group: pages-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
-  cancel-in-progress: true
-
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-          cache: pip
-
-      - name: Install MkDocs Material
-        run: |
-          python -m pip install --upgrade pip
-          pip install \
-            mkdocs-material \
-            "pymdown-extensions>=10"
-
-      - name: Build site (strict — broken links fail the PR check)
-        run: mkdocs build --strict --site-dir site
-
-      - name: Deploy to Cloudflare Pages
-        id: deploy
-        if: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          # Production goes to main; everything else is a preview.
-          # CF Pages picks the production custom domain (docs.supachad.com)
-          # only when branch=main; preview branches get the *.pages.dev URL.
-          command: >-
-            pages deploy site
-            --project-name=supachad-docs
-            --branch=${{ github.head_ref || github.ref_name }}
-
-      - name: Comment preview URL on PR
-        if: github.event_name == 'pull_request' && steps.deploy.outputs.deployment-url != ''
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          # Same body marker → the action updates the same comment on
-          # subsequent pushes instead of growing a wall of URLs.
-          body: |
-            <!-- supachad-docs-preview -->
-            📘 **Preview deployment**: ${{ steps.deploy.outputs.deployment-url }}
-            (refreshes on every push to this PR)
-          edit-mode: replace
-
-      - name: Upload artifact (no CF secret set — local-only build)
-        if: ${{ secrets.CLOUDFLARE_API_TOKEN == '' }}
-        uses: actions/upload-artifact@v4
+      - run: pip install mkdocs-material "pymdown-extensions>=10"
+      - run: mkdocs build --strict --site-dir site
+      - uses: actions/upload-artifact@v4
         with:
           name: site
           path: site
-          retention-days: 7
