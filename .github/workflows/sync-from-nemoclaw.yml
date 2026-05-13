@@ -1,0 +1,84 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026
+# SPDX-License-Identifier: Apache-2.0
+#
+# sync-from-nemoclaw — daily pull of allowlisted source files from
+# tantodefi/NemoClaw#chad-dev into docs/_source/. If anything changed,
+# opens (or updates) a PR. That PR's preview deployment lets you
+# inspect the proposed update at <branch>.supachad-docs.pages.dev
+# before merge → production.
+#
+# Triggers: 06:17 UTC daily + manual workflow_dispatch.
+# Cred surface: GITHUB_TOKEN only (no PAT, no cross-repo write).
+
+name: sync-from-nemoclaw
+
+on:
+  schedule:
+    # 06:17 UTC — off the top-of-hour to avoid GitHub's scheduler spike
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'NemoClaw ref to sync from (default chad-dev)'
+        required: false
+        default: 'chad-dev'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: sync-from-nemoclaw
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run sync script
+        env:
+          SYNC_REF: ${{ inputs.ref || 'chad-dev' }}
+        run: |
+          bash scripts/sync-from-nemoclaw.sh --ref "$SYNC_REF"
+
+      - name: Check for changes
+        id: diff
+        run: |
+          if [ -z "$(git status --porcelain docs/_source)" ]; then
+            echo "changed=false" >>"$GITHUB_OUTPUT"
+            echo "::notice::No source changes since last sync."
+          else
+            echo "changed=true" >>"$GITHUB_OUTPUT"
+            git --no-pager diff --stat docs/_source | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Open / update PR
+        if: steps.diff.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          # Same branch every run — the action force-pushes onto it and
+          # updates the existing PR rather than spawning new ones daily.
+          branch: chore/sync-from-nemoclaw
+          base: main
+          title: 'chore(docs): sync from tantodefi/NemoClaw'
+          commit-message: 'chore(docs): sync from tantodefi/NemoClaw (auto)'
+          body: |
+            Auto-sync from `tantodefi/NemoClaw#${{ inputs.ref || 'chad-dev' }}`.
+
+            Files in `docs/_source/` were re-pulled by
+            `scripts/sync-from-nemoclaw.sh`. The auto-banner at the top
+            of each file points to the canonical source path + commit.
+
+            **Preview deploy will appear as a comment below once the
+            `deploy-docs` workflow finishes building this PR.** Review
+            the rendered preview and merge to publish to
+            `docs.supachad.com`.
+
+            Triggered: `${{ github.event_name }}` · ref: `${{ inputs.ref || 'chad-dev' }}`
+          labels: |
+            auto-sync
+            docs
+          delete-branch: false

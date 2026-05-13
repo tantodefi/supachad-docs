@@ -1,0 +1,112 @@
+site_name: Supachad
+site_description: An always-on agent that runs while you sleep. Sandboxed, budgeted, earns autonomy gradually.
+site_url: https://docs.supachad.com
+repo_url: https://github.com/tantodefi/NemoClaw
+repo_name: tantodefi/NemoClaw
+edit_uri: edit/chad-dev/
+
+theme:
+  name: material
+  logo: assets/chad-mark.svg
+  favicon: assets/chad-mark.svg
+  font:
+    text: Inter
+    code: JetBrains Mono
+  palette:
+    - scheme: default
+      primary: amber
+      accent: amber
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      primary: amber
+      accent: amber
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/pencil
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.expand
+    - navigation.indexes
+    - navigation.top
+    - navigation.tracking
+    - navigation.path
+    - navigation.footer
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.action.edit
+    - content.tooltips
+
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.details
+  - pymdownx.keys
+  - pymdownx.tilde
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+plugins:
+  - search
+
+nav:
+  - Home: index.md
+  - Introduction: intro.md
+  - Architecture:
+    - Overview: architecture.md
+    - Memory stack: memory.md
+    - Orchestrator + sub-agents: orchestrator.md
+    - Substrates (local vs GHA): substrates.md
+    - Autonomy & action gate: autonomy.md
+    - Premium escalation: premium.md
+    - Front-ends (Open WebUI): front-ends.md
+  - Operations:
+    - Cron schedule: operations.md
+    - Reproducing Chad: reproducing.md
+    - Deploying these sites: deploying.md
+  - Project:
+    - Changelog: changelog.md
+    - Roadmap: roadmap.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/tantodefi/NemoClaw
+  generator: false
+
+copyright: >
+  Original docs content licensed under the parent repo's terms. Upstream
+  dependency names are nominative references; see the source repo for
+  attributions.
