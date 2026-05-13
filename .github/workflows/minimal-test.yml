@@ -1,8 +1,7 @@
 name: minimal-test
 on:
-  workflow_dispatch:
   push:
-    branches: [test-minimal]
+    branches: [main]
 jobs:
   hello:
     runs-on: ubuntu-latest
