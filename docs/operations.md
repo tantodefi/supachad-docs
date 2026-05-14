@@ -1,11 +1,11 @@
 # Operations: the cron schedule
 
-Chad's contract with the day is the cron list. Eleven standing jobs,
+Chad's contract with the day is the cron list. Twelve standing jobs (plus three host-side launchd watchdogs that supervise the pod from outside),
 all registered by `chad-setup.sh`, all budget-guarded, all
 deliberately conservative — every fire tokenizes a prompt and spawns
 a model call, so the rule is: fewer, cheaper runs.
 
-## The eleven jobs
+## The twelve jobs
 
 | Job | Cadence | Budget guard | What it does |
 |---|---|---|---|
@@ -18,8 +18,9 @@ a model call, so the rule is: fewer, cheaper runs.
 | `chad-proposal-apply` | daily 04:30 UTC | n/a | Reads latest proposals JSON, applies narrow safe-list cron tunings. Gated by `chad-action-gate chad_self_modify_cron`. |
 | `chad-skill-watch` | daily 09:00 UTC | n/a | Diffs the live skill catalog against last snapshot. Surfaces additions/removals/changes. |
 | `memory-curator` | weekly Sat 04:00 UTC | inactivity-gated + budget guard | `chad-memory-curator` — Hermes-style consolidation. Snapshots first, spawns researcher with curator prompt, **draft-only**. |
-| `spawn-poll` | every 5min | n/a | `chad-spawn-poll` — reconciles async gha sub-agent spawns. Skips fresh entries. |
+| `spawn-poll` *(host launchd, not openclaw cron)* | every 5min | n/a | Moved from openclaw cron to a host-side launchd watchdog (`dev.nemoclaw.chad-spawn-poll`) on 2026-05-14. The previous agent-turn cron cost ~12.7M tokens/day and 288 dashboard entries to invoke a 5-second shell reconciler. Same script, no agent turn. |
 | `spawn-gc` | weekly Mon 02:30 UTC | n/a | `chad-spawn-gc` — branch retention for `chad-spawn/*` on chad-state. |
+| `experiment-night` | nightly 02:00 UTC | per-operator concurrent budget (default 3) | **(NEW 2026-05-14)** Four-phase autonomous experiment loop: propose from memory, observe running, evaluate at the eval window, auto-schedule calendar coordination. Auto-promotes or auto-retires per a regression threshold (default -0.30). Bounded by per-operator concurrent budget. See [Autonomy](autonomy.md). |
 
 ## Why the schedule looks the way it does
 

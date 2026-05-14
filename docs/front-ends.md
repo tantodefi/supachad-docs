@@ -65,24 +65,78 @@ deploy if Chad were chatting with someone other than the operator.
 ## The shim's session model
 
 `chad-shim.py` does not maintain its own conversation state. Each
-incoming `/v1/chat/completions` request is hashed
-(`sha256(messages[-N:])`) into a stable `--session-id`, then passed
-to `openclaw agent --json --agent main --session-id <hash>`. The
-session is Chad's main session — the same one a cron uses, the same
-one the dashboard uses, the same one the operator uses over SSH.
+incoming `/v1/chat/completions` request is mapped to an openclaw
+`--session-id`, then dispatched as `openclaw agent --json --agent
+main --session-id <id>`. The session is Chad's main session — the
+same one a cron uses, the same one the dashboard uses, the same one
+the operator uses over SSH.
+
+**Session-id mapping (chad-shim/0.2+, 2026-05-13):** if Open WebUI
+forwards `X-OpenWebUI-Chat-Id` (it does when `ENABLE_FORWARD_USER_INFO_HEADERS=True`),
+the shim uses that chat-id directly — one openclaw session per Open
+WebUI chat. Falls back to a stable hash of the first-message tuple
+for direct API callers without the header.
+
+**Per-operator routing (chad-shim/0.2+):** when the request carries
+`X-OpenWebUI-User-Email`, the shim:
+
+1. Slug-sanitizes the email local-part (e.g. `tantodefi@proton.me` →
+   `tantodefi`)
+2. Loads `/sandbox/.openclaw-data/identities/<slug>.md` (mtime-cached
+   so edits land without a shim restart)
+3. Prepends the file as a tagged operator-context block to the user
+   message before dispatching to the openclaw agent
+
+Unknown senders fall back to `default.md`. Anonymous (no headers)
+gets no prefix. The result is that a single Open WebUI install can
+serve multiple operators (e.g. `tantodefi` + `tjcooke`) with
+distinct personas while sharing Chad's substrate.
+
+For higher-trust mutations (calendar, notes, automations on the
+operator's own OpenWebUI surfaces), the `chad-webui` CLI + matching
+`webui__*` MCP tools enforce **per-operator API keys** with
+fail-closed scoping: when `CHAD_OPERATOR_SLUG` is set, the wrapper
+selects `OPENWEBUI_API_KEY_<SLUG>` and refuses to fall back to the
+default admin key. Cross-operator writes hit HTTP 403 at the
+OpenWebUI permission layer regardless of what the prompt says.
 
 Consequences:
 
-- **No per-user history split.** This is a single-operator design
-  today. Multiple users on the same Open WebUI install would all
-  share Chad's main session. (See [Roadmap](roadmap.md) for
-  multi-Chad scheduling.)
+- **Per-operator history is preserved by chat-id.** Multiple users
+  on the same Open WebUI install each get their own openclaw session
+  — one per chat thread — but all running against Chad's main agent
+  + memory + tools.
+- **Operator personas via filesystem.** Edit
+  `/sandbox/.openclaw-data/identities/<slug>.md` to tune what each
+  operator sees from Chad. No service restart required.
 - **Memory persists across surfaces.** A fact captured in a chat
   turn surfaces in the next email-check; a preference dropped via
   email shows up in the next chat reply.
-- **The shim is stateless.** Crashes are recoverable — `chad-setup`,
-  `chad-restore-from-github`, and `chad-backup-to-github` each
-  self-heal a dead shim. Any cron pulse keeps it alive.
+- **The shim is stateless and supervised.** A `dev.nemoclaw.chad-shim-watchdog`
+  launchd job (2026-05-14) probes `/v1/models` every 5 min and
+  restarts the shim on death. Recoveries land in the agent-inbox
+  for Chad's next cron turn to consume.
+
+## Programmatic control plane — `chad-webui` and `webui__*` MCP tools
+
+Beyond chat, Chad has a full programmatic surface to Open WebUI:
+
+- **`chad-webui` CLI** (60 sub-commands across 10 groups —
+  calendar / notes / automations / memories / chats / knowledge /
+  models / functions / tools / folders). Covers the entire v0.9.5
+  REST API. Source: `scripts/openwebui/chad-webui`.
+- **`chad-webui-mcp`** registers each sub-command as a native MCP
+  tool (`webui__<group>_<command>`) so the agent sees JSON schemas
+  in its tool list rather than parsing shell exec output.
+- **`openwebui` skill** documents every command with worked
+  examples, composed recipes (save chat as note, reschedule
+  events, knowledge ingestion), error-routing tables, and the
+  network plumbing.
+
+This is what lets Chad book a meeting, save a note, install a
+custom function, or curate a RAG collection on operator request
+— and what lets the nightly experiment loop materialize automations
+as actual OpenWebUI artifacts.
 
 ## Persistence
 
