@@ -232,3 +232,20 @@ ssh openshell-chad 'chad-spawn --kind <name> --task-file /tmp/t.md --dry-run'
 # Real spawn
 ssh openshell-chad 'chad-spawn --kind <name> --task-file /tmp/t.md'
 ```
+
+## Higher-level control surfaces (skill layer)
+
+Alongside the six helpers, Chad has two **runtime-synced skills**
+that act as orchestrator-layer playbooks. They live at
+`/sandbox/.openclaw-data/skills/<name>/SKILL.md` and load via
+`openclaw skills` auto-discovery.
+
+| Skill | What it does |
+|---|---|
+| **`openwebui`** (added 2026-05-13) | Full operator's manual for the `chad-webui` CLI (60 sub-commands across 10 groups — calendar, notes, automations, memories, chats, knowledge, models, functions, tools, folders) and its matching MCP tools (`webui__*`). Documents the per-operator API-key fail-closed pattern, the L7-MITM-TLS network plumbing (Python urllib needs `SSL_CERT_FILE` pointed at the OpenShell CA bundle), and 6 composed recipes (save chat as note, reschedule events, RAG ingestion, etc.). See [Front-Ends](front-ends.md). |
+| **`chad-experiment`** (added 2026-05-14) | Methodology for the **autonomous experiment lifecycle** (loop 6 on [Autonomy](autonomy.md)). Documents the 13-verb `chad-experiment` CLI (design / start / observe / evaluate / promote / retire / list / show / budget / ab-start / ab-pick / recent-memory / recent-ledger), the worthy-of-automation 5-criteria checklist, success-metric authoring rules, calendar-tag conventions (`[chad-block]`, `[chad-experiment]`, `[operator-sync]`, `[experiment-review]`), and the 4-phase nightly cron workflow. |
+
+These skills are not in `/usr/local/bin/` like the six helpers —
+they're markdown reference docs that the agent loads on every spawn,
+and they hand off to underlying CLIs (`chad-webui`, `chad-experiment`)
+that Chad calls during turns.

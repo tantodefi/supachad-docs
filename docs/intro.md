@@ -11,7 +11,7 @@ Three properties define the design:
 ## 1. Always on
 
 Chad is a process tree, not a tab. The agent's contract with the day
-is **eleven standing cron jobs**, each a one-line wrapper invocation
+is **twelve standing cron jobs plus three host-side launchd watchdogs**, each a one-line wrapper invocation
 that exits in under a minute. Heavy work happens inside the wrapper
 (Python, shell, detached `nohup` jobs); the model only sees
 "do the thing the wrapper does" because re-tokenizing a long prompt

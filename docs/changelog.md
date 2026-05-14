@@ -4,6 +4,53 @@ A curated record of what shipped on `chad-dev`. Hand-edited from
 git log; not exhaustive. Conventional Commits scope (`feat(chad/*)`)
 maps to the headings below.
 
+## 2026-05-14
+
+### Autonomous experiment lifecycle
+
+A sixth autonomy loop: `chad-experiment-night` cron at 02:00 UTC runs
+four phases nightly — propose hypotheses from memory, observe running
+experiments, evaluate against success metrics, auto-schedule calendar
+coordination. Bounded by a per-operator concurrent budget (default 3)
+and a regression auto-retire threshold (default -0.30). Materializes
+artifacts (automations, functions, tools, knowledge collections,
+memories, notes, calendar events) via the `chad-webui` MCP tools.
+
+Components: `chad-experiment` CLI (13 verbs), `chad-experiment` skill
+documenting methodology, `state/experiments/{config,ledger,active,archive}`
+ledger format, calendar tag conventions (`[chad-block]`,
+`[chad-experiment]`, `[operator-sync]`, `[experiment-review]`).
+
+### Full OpenWebUI v0.9.5 API coverage + native MCP tools
+
+`chad-webui` CLI extended from 33 to 60 sub-commands across 10 groups,
+covering every documented v0.9.5 REST endpoint. Companion
+`chad-webui-mcp` stdio server registers each sub-command as a native
+MCP tool (`webui__<group>_<command>`). Fail-closed per-operator
+API-key selection (`OPENWEBUI_API_KEY_<SLUG>`) enforced at the wrapper
+layer. New `openwebui` skill (927 lines) documents every command with
+worked examples + composed recipes + nightly experiment playbook.
+
+### Host-side watchdogs
+
+`spawn-poll` moved out of openclaw cron (was 288 agent turns/day at
+~44k tokens each → ~12.7M tokens/day) to a host launchd job. Same
+script, no agent overhead. State-change events flow back to Chad via
+a new `state/agent-inbox.jsonl` stream that cron agent turns can tail
+on startup. Also: new `chad-shim-watchdog` launchd job catches
+BrokenPipeError-class shim crashes in 5-min worst case (was 6h).
+
+### Wrapper-bug shim layer
+
+Five argv-vs-env / hardcoded-path bugs in `/usr/local/bin/chad-*`
+(`chad-budget`, `chad-issue-triage` ×3 sites, `chad-mail-check`,
+`chad-issue-triage-cron`, `chad-email-check-cron`) caused
+silent skips and traceback crashes across the issue-triage,
+email-check, and self-improve cron paths. All shimmed via
+`/sandbox/.openclaw-data/bin/` with cron-payload absolute-path
+overrides; documented at `docs/operations/wrapper-bugs.md` in the
+NemoClaw repo.
+
 ## 2026-05-13
 
 ### Memory pipeline consolidation + gateway watchdog

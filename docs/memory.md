@@ -136,6 +136,22 @@ fitness) call `gbrain query` directly inside their prompt template.
 the per-store enabled flags. The file is `444` (read-only) outside of
 explicit `chad-setup` invocations.
 
+## Newer state surfaces (2026-05-13/14)
+
+Three runtime-state directories added in May 2026, all under
+`/sandbox/.openclaw-data/` and all included in the workspace backup
+manifest (so they survive pod resets):
+
+| Path | Purpose |
+|---|---|
+| `identities/<slug>.md` | Per-operator persona files prepended by `chad-shim` to user messages. One file per operator slug (email local-part), plus `default.md` for unknown senders. Edits land without a shim restart (mtime-cached). |
+| `state/experiments/{config,ledger,active,archive}` | Autonomous experiment lifecycle state. `config.json` carries the budget + thresholds + tag map; `ledger.jsonl` is the append-only event log; `active/<id>.json` is the running record; `archive/<id>.json` is the snapshot at promote/retire. See [Autonomy](autonomy.md). |
+| `state/agent-inbox.jsonl` | Append-only structured event stream from host-side launchd watchdogs (`chad-gateway-watchdog`, `chad-shim-watchdog`, `chad-spawn-poll`). Cron agent turns can `tail` this at startup to surface state changes that happened between turns. |
+
+These are tracked in `chad-workspace-files.txt` under `[runtime-dirs]`,
+so the same `workspace-backup` cron that round-trips memory + crons +
+identities also ships them to `chad-state`.
+
 ## Pre-mutation safety net
 
 Before any bulk memory operation, `chad-memory-snapshot create`
