@@ -78,7 +78,7 @@ how Chad works.
 
     [:octicons-arrow-right-24: Premium](premium.md)
 
--   :material-monitor-outline:{ .lg .middle } **Front-ends**
+-   :material-monitor-dashboard:{ .lg .middle } **Front-ends**
 
     ---
 
