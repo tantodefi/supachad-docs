@@ -6,56 +6,88 @@ ends and OpenShell's gateway begins; where a sub-agent's filesystem
 ends and the GitHub Actions runner's begins; where the autonomy
 boundary sits relative to each external action.
 
-## The three concentric rings
+## The concentric rings (plus an outer supervisor tier)
 
 A naked CLI agent has no blast-radius story. Chad runs inside three
-boundaries, each with a different threat model:
+boundaries, each with a different threat model — plus a fourth
+supervisor tier that lives _outside_ the pod and watches it from the
+host so token-expensive supervision doesn't run inside the agent layer.
 
 ```mermaid
 graph TB
-  subgraph H["L1 · Host (operator machine)"]
+  subgraph L0["L0 · Host (operator machine)"]
     H1[nemoclaw CLI]
     H2[Cloudflare tunnel]
-    H3[Credentials]
+    H3[Credentials + SSH keys]
+    H4[chad-tunnel<br/>SSH local-forward<br/>:8901 → chad-shim]
   end
 
-  subgraph C["L2 · Container (OpenShell pod)"]
-    C1[Gateway user]
-    C2[capsh capability drops]
-    C3[L7 proxy + OPA policy]
+  subgraph L1["L1 · Host supervisors (launchd, 5-min cadence)"]
+    W1[chad-gateway-watchdog<br/>OOM-recover gateway<br/>with 4 GB heap]
+    W2[chad-shim-watchdog<br/>restart shim on death]
+    W3[chad-spawn-poll<br/>reconcile GHA spawns]
+    W4[chad-webui-ingest<br/>chats → gbrain]
+    W5[nvidia-liveness<br/>model dropdown sweep]
   end
 
-  subgraph S["L3 · Sandbox (sandbox user)"]
-    direction LR
-    S1[Chad agent]
-    S2[Sub-agents]
-    S3[Memory stores]
-    S4[Cron wrappers]
+  subgraph L2["L2 · Container (OpenShell pod)"]
+    C1[Gateway user · capsh drops]
+    C2[L7 proxy + OPA policy<br/>MITM TLS for inspect hosts]
+    C3[L1 → L2 SSH ingress<br/>only path in]
   end
 
-  subgraph G["L3.5 · Per-spawn breakout"]
-    G1[GitHub Actions runner]
+  subgraph L3["L3 · Sandbox (sandbox user, uid 998)"]
+    direction TB
+    S0[openclaw gateway<br/>port 18789]
+    S1[Chad main agent<br/>+ 12 standing crons]
+    S2[chad-shim.py<br/>port 8901<br/>OpenAI bridge]
+    S3[Sub-agents<br/>local + gha]
+    S4[Memory stores<br/>gbrain · lancedb · wiki]
+    S5["bin/ shims<br/>(wrapper-bug fixes)"]
   end
 
-  H --> C
-  C --> S
-  S -. spawns .-> G
+  subgraph L4["L4 · Per-spawn breakout"]
+    G1[GitHub Actions runner<br/>fresh VM per workflow]
+  end
+
+  L0 --> L2
+  L1 -.supervises.-> L2
+  L1 -.supervises.-> L3
+  L2 --> L3
+  L3 -.spawns.-> L4
+  L3 -.event-stream.-> L1
+
+  classDef host fill:#fef3c7,stroke:#d97706,color:#000
+  classDef watch fill:#fde68a,stroke:#b45309,color:#000
+  classDef container fill:#ddd6fe,stroke:#7c3aed,color:#000
+  classDef sandbox fill:#c7d2fe,stroke:#4f46e5,color:#000
+  classDef gha fill:#fecaca,stroke:#dc2626,color:#000
+  class L0 host
+  class L1 watch
+  class L2 container
+  class L3 sandbox
+  class L4 gha
 ```
 
-| Ring | What lives here | What enforces the boundary |
-|---|---|---|
-| **L1 · Host** | nemoclaw CLI, credentials, Cloudflare tunnel | OS user, file permissions, SSH keys |
-| **L2 · Container** | OpenShell gateway user, L7 proxy, OPA policy engine | Linux capabilities (capsh drops), policy hash check at boot |
-| **L3 · Sandbox** | Chad, pi, claude, gh, curl, gbrain, sub-agents | Per-binary L7 egress allowlists pinned by `/proc/self/exe` |
-| **L3.5 · GHA runner** | One-off sub-agent spawns under `substrate: gha` | Fresh VM per workflow run, no shared state with Chad |
+| Tier | What lives here | What enforces the boundary | Failure mode + recovery |
+|---|---|---|---|
+| **L0 · Host** | nemoclaw CLI, credentials, Cloudflare tunnel, SSH keys | OS user, file permissions, SSH keys | Host crash = everything stops; restart laptop |
+| **L1 · Host supervisors** | 5-min launchd cadence — gateway watchdog, shim watchdog, spawn-poll, webui-ingest, nvidia-liveness | macOS launchd; each plist is independent | If a watchdog dies, launchd restarts it; no in-band supervision needed |
+| **L2 · Container** | OpenShell gateway user, L7 proxy, OPA policy engine | Linux capabilities (capsh drops), policy hash check at boot | Container restart resets all in-process state but state on bind-mounts persists |
+| **L3 · Sandbox** | openclaw gateway, Chad agent, chad-shim.py, sub-agents, memory stores, wrapper-bug shims | Per-binary L7 egress allowlists pinned by `/proc/self/exe`; per-operator API-key fail-closed | Gateway OOM → L1 watchdog respawns with 4 GB heap; shim crash → L1 watchdog restarts within 5 min |
+| **L4 · GHA runner** | One-off sub-agent spawns under `substrate: gha` | Fresh VM per workflow run, no shared state with Chad | Lossy by design; results round-trip via `chad-state` branches |
 
-Three of the rings (L1, L2, L3) are kernel/OS-enforced. The L7
+Three of the rings (L0, L2, L3) are kernel/OS-enforced. The L7
 allowlists at the sandbox layer are policy-enforced — same syscall
 vocabulary, but the squid+OPA combination decides whether each egress
-flow is in-policy.
+flow is in-policy. **L1 is the supervisor tier** — it runs no agent
+turns and consumes zero inference tokens. State changes detected by
+L1 (gateway restarts, shim crashes, spawn-poll reconciliations) flow
+back to L3 via the `agent-inbox.jsonl` event stream so the next cron
+agent turn can pick up overnight incidents.
 
-The fourth boundary (L3.5) is a per-spawn substrate choice, not
-an always-on ring. See [Substrates](substrates.md).
+L4 is a per-spawn substrate choice, not an always-on ring.
+See [Substrates](substrates.md).
 
 !!! warning "L3.5 loses L7 enforcement"
     The GHA breakout swaps *kernel-isolation* for *policy-isolation*.
