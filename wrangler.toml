@@ -1,0 +1,19 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026
+# SPDX-License-Identifier: Apache-2.0
+#
+# Cloudflare Workers — static assets binding for the MkDocs Material build.
+#
+# `wrangler deploy` (the Build & Deployments default) reads this file, finds
+# the assets directory at ./site, and uploads it to the Workers runtime.
+# Workers-with-assets is Cloudflare's unified successor to Pages — static
+# files served from edge, no compute needed.
+
+name = "supachad-docs"
+compatibility_date = "2026-05-01"
+workers_dev = false
+
+# Static-asset binding. The build command (`mkdocs build --site-dir site`)
+# fills this dir; wrangler ships its contents on every deploy.
+[assets]
+directory = "./site"
+not_found_handling = "404-page"
