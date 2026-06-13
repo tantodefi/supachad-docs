@@ -18,6 +18,9 @@ since the initial cut. Status is current as of the
 | NVIDIA fallback for OpenAI-compat kinds | `codex` and `opencode` kinds | Falls through to `integrate.api.nvidia.com` when `OPENAI_API_KEY` is absent. |
 | Premium escalation | `chad-premium` + AuthContext | Anthropic Claude routing for tasks where Nemotron's reasoning depth feels shallow. See [Premium escalation](premium.md). |
 | Open WebUI front-end | `chad-shim.py` + docker-compose | Chad as an OpenAI-compat model. See [Front-ends](front-ends.md). |
+| Nemotron 3 Ultra 550B + reasoning | hosted inference profiles | Newest NVIDIA open model as default; reasoning on by default after the tool-call harness bug was retested and found absent in Ultra. Self-hosted profiles stay on Super 120B. |
+| Smithers evolutionary experiments (shadow) | `scripts/chad-smithers/` | Durable host-side runner: model router, evolutionary selection (start wide → score in parallel → keep what works), crash-resume, nightly launchd job posting the leaderboard to OpenWebUI. Shadow beside `chad-experiment-cron`. |
+| Moshi notifications + phone approval | `moshi-hook` agent hooks + `chad-tmux` | Host `claude` runs notify the phone and route approval gates to it; `chad-tmux` gives phone-attachable host sessions. |
 
 ## Phase 2 — held for follow-up
 
