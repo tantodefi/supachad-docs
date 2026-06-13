@@ -4,6 +4,37 @@ A curated record of what shipped on `chad-dev`. Hand-edited from
 git log; not exhaustive. Conventional Commits scope (`feat(chad/*)`)
 maps to the headings below.
 
+## 2026-06-13
+
+### Nemotron 3 Ultra 550B + reasoning on by default
+
+Adopted NVIDIA's newest, most capable open model
+(`nvidia/nemotron-3-ultra-550b-a55b`) as the default for the hosted
+inference profiles. The long-standing harness bug that blocked
+reasoning with tool calls (the Kimi K2.5 `reasoningSafe=false` class)
+was retested against Ultra and is **absent** — Ultra emits standard
+tool calls and round-trips cleanly with reasoning on, so reasoning is
+now on by default. Self-hosted profiles stay on Super 120B (550B local
+is a much larger GPU footprint).
+
+### Smithers evolutionary experiment runner (shadow)
+
+A durable, host-side experiment runner on
+[Smithers](https://smithers.sh) under `scripts/chad-smithers/`: a model
+router (auto-routes tiers across Nemotron Ultra / Claude subscription /
+local), an evolutionary selection engine (start wide → score in
+parallel → keep only what works), crash-resumable runs, and a nightly
+launchd job that posts the leaderboard to OpenWebUI. Runs in shadow
+beside the deterministic `chad-experiment-cron`. Plus MCP-health-probe
+and fail-only cron-report workflows.
+
+### Moshi notifications + phone approval
+
+Wired the Moshi agent hooks so host `claude` runs notify the operator's
+phone on finish and route approval gates to the phone — the mechanism
+behind the autonomy ladder. Added `chad-tmux` for phone-attachable
+host sessions.
+
 ## 2026-05-14
 
 ### Autonomous experiment lifecycle
