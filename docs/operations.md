@@ -20,7 +20,7 @@ a model call, so the rule is: fewer, cheaper runs.
 | `memory-curator` | weekly Sat 04:00 UTC | inactivity-gated + budget guard | `chad-memory-curator` — Hermes-style consolidation. Snapshots first, spawns researcher with curator prompt, **draft-only**. |
 | `spawn-poll` *(host launchd, not openclaw cron)* | every 5min | n/a | Moved from openclaw cron to a host-side launchd watchdog (`dev.nemoclaw.chad-spawn-poll`) on 2026-05-14. The previous agent-turn cron cost ~12.7M tokens/day and 288 dashboard entries to invoke a 5-second shell reconciler. Same script, no agent turn. |
 | `spawn-gc` | weekly Mon 02:30 UTC | n/a | `chad-spawn-gc` — branch retention for `chad-spawn/*` on chad-state. |
-| `experiment-night` | nightly 02:00 UTC | per-operator concurrent budget (default 3) | **(NEW 2026-05-14)** Four-phase autonomous experiment loop: propose from memory, observe running, evaluate at the eval window, auto-schedule calendar coordination. Auto-promotes or auto-retires per a regression threshold (default -0.30). Bounded by per-operator concurrent budget. See [Autonomy](autonomy.md). |
+| `experiment-night` | nightly 02:00 UTC | per-operator concurrent budget (default 3) | Four-phase autonomous experiment loop: propose from memory, observe running, evaluate at the eval window, auto-schedule calendar coordination. Auto-promotes or auto-retires per a regression threshold (default -0.30). Bounded by per-operator concurrent budget. See [Autonomy](autonomy.md). |
 
 ## Why the schedule looks the way it does
 
@@ -40,8 +40,8 @@ is the worker.
 **The token budget is daily.** Honor-based cap of 500k tokens, UTC
 reset. A runaway Monday should not drain Tuesday's pool. Every cron
 checks `chad-budget show --field remaining_tokens` near the top;
-if reserve is too low, the wrapper falls through to a no-op or a
-deferred draft.
+if reserve is too low, the wrapper falls through to a no-op or
+queues a draft for the next run.
 
 **Email cadence beats human latency.** 19×/day is enough that
 allowlisted correspondents see a reply within an hour. Going

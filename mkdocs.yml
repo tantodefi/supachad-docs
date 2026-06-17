@@ -99,7 +99,7 @@ nav:
     - Deploying these sites: deploying.md
   - Project:
     - Changelog: changelog.md
-    - Roadmap: roadmap.md
+    - Capabilities & boundaries: roadmap.md
 
 extra:
   social:

@@ -266,16 +266,52 @@ built on [Smithers](https://smithers.sh) with a web IDE at
 
 **Decision: keep both, bridge them.** chad-spawn stays the
 GHA-isolated one-shot substrate; chad-Smithers is the durable workflow
-orchestrator that can *call* `chad-spawn-gha` to offload one heavy
-step (a build, a big parallel eval) onto a GitHub Actions runner,
-reconciling its `result.json` as that task's output. No wholesale
-migration of the ~1,300-line spawn stack — Smithers wraps it.
+orchestrator that can *call* `chad-spawn` to offload one heavy step (a
+build, a big parallel eval) onto a GitHub Actions runner, reconciling
+its `result.json` as that task's output. No wholesale migration of the
+~1,300-line spawn stack — Smithers wraps it.
 
-What migrates to Smithers: the **multi-step / durable / inspectable**
-flows (self-improve, issue-triage, memory-curator) — they gain resume,
-the dashboard, and `<Approval>` gates. What stays a plain wrapper: the
-**mechanical one-shot** crons (backups, prune, gc, budget-audit),
-where a workflow engine is pure overhead.
+### The bridge
+
+`scripts/chad-smithers/lib/spawn.js` is the keystone. `runSpawn({kind,
+task, substrate, id, …})` runs inside a durable Smithers task and shells
+out to the existing `chad-spawn` — it does **not** rebuild any GHA
+machinery. It never throws (always resolves to a `result.json`-shaped
+object), so one bad spawn can't sink a durable run. Transport resolves
+per call: a host stub for dry runs (`CHAD_SPAWN_STUB=1`), SSH into the
+pod for real spawns (`CHAD_SPAWN_SSH=<host>` — task streamed in, result
+streamed back, since scp is blocked in the sandbox), or local `chad-spawn`
+when Smithers runs inside the pod. It also ports `chad-route` →
+`route()` and the issue-triage scoring → `scoreIssue()` as auditable
+plain JS (unit-tested).
+
+```jsx
+import { runSpawn, route } from "../lib/spawn.js";
+
+<Task id="fix" output={outputs.spawn} sideEffect idempotencyKey={`spawn-${n}`}>
+  {() => runSpawn({ kind: route(issue.title), substrate: "gha", id: `iss-${n}`, task })}
+</Task>
+```
+
+### What migrated
+
+The **multi-step / durable / inspectable** flows became Smithers
+workflows (under `scripts/chad-smithers/workflows/`), each gaining
+resume, the dashboard task tree, and `<Approval>` gates:
+
+| Workflow | Replaces | Shape |
+|---|---|---|
+| `issue-triage.jsx` | chad-issue-triage multi-spawn | fetch → score+route → `Parallel` spawn per issue → report |
+| `content-pipeline.jsx` | research→write→review multi-spawn | three spawns → reviewer-gated `Approval` → publish |
+| `self-improve.jsx` | chad-self-improve | telemetry → propose → safe-list/`Approval` → apply |
+| `memory-curator.jsx` | chad-memory-curator | inactivity-gate → snapshot → propose → `Approval` |
+| `log-digest.jsx` | manual cron-log audits | cluster host service-log errors → note (quiet if clean) |
+
+All are **shadow-safe by default** (they log what they would do until an
+explicit env flag flips them to real mode — same draft-only contract as
+the shell wrappers). What stays a plain wrapper: the **mechanical
+one-shot** crons (backups, prune, gc, budget-audit), where a workflow
+engine is pure overhead.
 
 See [Runs IDE](runs-ide.md) for the dashboard and `chad-runs` CLI, and
 [Substrates](substrates.md) for the GHA bridge.

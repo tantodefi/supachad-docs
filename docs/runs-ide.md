@@ -135,6 +135,37 @@ The `openwebui` skill has a sibling **Smithers/runs** skill
 (`scripts/chad-smithers/SKILL.md`) documenting these verbs with
 worked examples.
 
+## Workflow catalog
+
+Every `.jsx` under the workspace is auto-discovered (it shows in the
+Workflows tab and `chad-runs workflows`). Side-effecting workflows are
+**shadow-safe by default** — they log what they would do until an
+explicit env flag flips them to real mode, the same draft-only contract
+as Chad's shell cron wrappers.
+
+Side-effecting workflows run in shadow by default and take an explicit
+env flag to enable irreversible actions (send, apply, publish) — the
+same fail-safe default as Chad's cron wrappers and the `chad-action-gate`.
+The "enable side-effects" column is the flag, not a missing feature.
+
+| Workflow | What it does | Enable side-effects |
+|---|---|---|
+| `experiments.jsx` | Evolutionary drafter-prompt arena (start wide → score → keep) | runs nightly |
+| `fusion.jsx` | One prompt across N models in parallel → fuse best | `--input '{"prompt":"…"}'` |
+| `mcp-health-probe.jsx` | Probe gbrain / webui MCP surfaces, escalate on failure | runs as-is |
+| `fail-only-report.jsx` | Quiet on green; report only on failure | runs as-is |
+| `email-ladder.jsx` | Autonomy ladder: triage → draft → moderate → `Approval` → send | `CHAD_EMAIL_SEND=1` + allowlist |
+| `issue-triage.jsx` | Fetch issues → score+route → `Parallel` spawn fixes → report | `CHAD_SPAWN_SSH=<host>` |
+| `content-pipeline.jsx` | research → draft → review (spawns) → `Approval` → publish | `CHAD_CONTENT_PUBLISH=1` |
+| `self-improve.jsx` | Cron telemetry → propose tunings → gate → apply | `CHAD_SELFIMPROVE_APPLY=1` |
+| `memory-curator.jsx` | Inactivity-gate → snapshot → propose consolidations → `Approval` | `CHAD_CURATOR_APPLY=1` |
+| `log-digest.jsx` | Cluster host service-log errors → note (quiet if clean) | `CHAD_LOGDIGEST_POST=1` |
+
+The last five are the **ported chad-spawn / cron features** (the keep-both
+decision below). They run on the same dashboard, resume after a crash,
+and route their spawns through the bridge — see
+[Orchestrator](orchestrator.md) for the per-workflow mapping.
+
 ## Fusion — all the models, fused
 
 `workflows/fusion.jsx` is the marquee workflow: run one prompt across
@@ -178,10 +209,13 @@ migration:
 
 The decision is **keep both, bridge them**: chad-spawn stays the
 GHA-isolated one-shot substrate, and a Smithers workflow can *call*
-`chad-spawn-gha` to offload one heavy step (a build, a big parallel
-eval) onto a GitHub Actions runner, reconciling its `result.json` as
-that task's output. See [Orchestrator](orchestrator.md) and
-[Substrates](substrates.md).
+`chad-spawn` to offload one heavy step (a build, a big parallel eval)
+onto a GitHub Actions runner, reconciling its `result.json` as that
+task's output. The bridge is `lib/spawn.js`'s `runSpawn()` — a durable
+task helper that shells out to the existing `chad-spawn` rather than
+rebuilding any GHA machinery. See [Orchestrator](orchestrator.md) for
+the bridge code and the migrated-workflow mapping, and
+[Substrates](substrates.md) for the offload path.
 
 ## Models and reasoning
 
@@ -191,7 +225,8 @@ any specific model. The default capable agent is **Nemotron 3 Ultra
 550B** (`nvidia/nemotron-3-ultra-550b-a55b`) with reasoning on — the
 tool-call harness bug that affected earlier models is absent in Ultra
 (verified by a tool-call round-trip). Backends: nemotron / local /
-claudecode / codex / anthropic, with opencode deferred.
+claudecode / codex / anthropic / opencode (the `opencode/big-pickle`
+free model, via Smithers' built-in OpenCode adapter).
 
 ## Deploying it
 
