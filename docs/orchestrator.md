@@ -249,3 +249,33 @@ These skills are not in `/usr/local/bin/` like the six helpers —
 they're markdown reference docs that the agent loads on every spawn,
 and they hand off to underlying CLIs (`chad-webui`, `chad-experiment`)
 that Chad calls during turns.
+
+## A second orchestrator: chad-Smithers
+
+Everything above is **chad-spawn** — imperative, one-shot sub-agents.
+Alongside it runs **chad-Smithers**, a durable workflow orchestrator
+built on [Smithers](https://smithers.sh) with a web IDE at
+`runs.supachad.com`. They are complementary, not a migration.
+
+| | chad-spawn | chad-Smithers |
+|---|---|---|
+| Shape | imperative one-shot sub-agents (kind manifests) | declarative durable workflows (`.jsx`) |
+| State | branch-as-record on chad-state | SQLite + live dashboard + crash-resume |
+| Best for | isolated one-shot agents (writer / coder / reviewer), GHA offload | multi-step pipelines, experiments, the autonomy ladder, anything inspectable / resumable |
+| Substrate | in-container **or** GHA | host (live) — **plus** GHA via the bridge |
+
+**Decision: keep both, bridge them.** chad-spawn stays the
+GHA-isolated one-shot substrate; chad-Smithers is the durable workflow
+orchestrator that can *call* `chad-spawn-gha` to offload one heavy
+step (a build, a big parallel eval) onto a GitHub Actions runner,
+reconciling its `result.json` as that task's output. No wholesale
+migration of the ~1,300-line spawn stack — Smithers wraps it.
+
+What migrates to Smithers: the **multi-step / durable / inspectable**
+flows (self-improve, issue-triage, memory-curator) — they gain resume,
+the dashboard, and `<Approval>` gates. What stays a plain wrapper: the
+**mechanical one-shot** crons (backups, prune, gc, budget-audit),
+where a workflow engine is pure overhead.
+
+See [Runs IDE](runs-ide.md) for the dashboard and `chad-runs` CLI, and
+[Substrates](substrates.md) for the GHA bridge.

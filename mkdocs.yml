@@ -92,6 +92,7 @@ nav:
     - Autonomy & action gate: autonomy.md
     - Premium escalation: premium.md
     - Front-ends (Open WebUI): front-ends.md
+    - Runs IDE (Smithers): runs-ide.md
   - Operations:
     - Cron schedule: operations.md
     - Reproducing Chad: reproducing.md

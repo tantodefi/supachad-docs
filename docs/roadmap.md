@@ -21,6 +21,9 @@ since the initial cut. Status is current as of the
 | Nemotron 3 Ultra 550B + reasoning | hosted inference profiles | Newest NVIDIA open model as default; reasoning on by default after the tool-call harness bug was retested and found absent in Ultra. Self-hosted profiles stay on Super 120B. |
 | Smithers evolutionary experiments (shadow) | `scripts/chad-smithers/` | Durable host-side runner: model router, evolutionary selection (start wide → score in parallel → keep what works), crash-resume, nightly launchd job posting the leaderboard to OpenWebUI. Shadow beside `chad-experiment-cron`. |
 | Moshi notifications + phone approval | `moshi-hook` agent hooks + `chad-tmux` | Host `claude` runs notify the phone and route approval gates to it; `chad-tmux` gives phone-attachable host sessions. |
+| Runs IDE for Smithers workflows | `runs.supachad.com` (`serve-runs.js` + `chad-runs`) | Web IDE over the Smithers SQLite DBs: run history, live task tree, `.jsx` editor, experiment leaderboard, browser launch/cancel/approve/fork. Fail-closed CF Access + key auth. See [Runs IDE](runs-ide.md). |
+| Model fusion + daily model refresh | `workflows/fusion.jsx` + `refresh-models.js` | Run a prompt across N models in parallel then fuse; roster auto-refreshed daily from NVIDIA's `/v1/models`. |
+| Two orchestrators, bridged | chad-spawn + chad-Smithers | Keep both: chad-spawn for one-shot GHA-isolated sub-agents, chad-Smithers for durable workflows; a `<GhaTask>` bridge offloads heavy Smithers steps via `chad-spawn-gha`. See [Orchestrator](orchestrator.md). |
 
 ## Phase 2 — held for follow-up
 
