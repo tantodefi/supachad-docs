@@ -1,5 +1,10 @@
 # Front-ends: Open WebUI
 
+!!! info "Two front-ends"
+    This page covers the **chat** surface (Open WebUI). The **workflow**
+    surface — a web IDE for durable Smithers runs at
+    `runs.supachad.com` — is documented at [Runs IDE](runs-ide.md).
+
 Chad ships with one chat front-end out of the box: a self-hosted
 [Open WebUI](https://openwebui.com) instance reached through a
 Cloudflare Tunnel, with Chad himself exposed as a model named `chad`.

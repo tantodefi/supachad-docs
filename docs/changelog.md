@@ -4,6 +4,54 @@ A curated record of what shipped on `chad-dev`. Hand-edited from
 git log; not exhaustive. Conventional Commits scope (`feat(chad/*)`)
 maps to the headings below.
 
+## 2026-06-16
+
+### Runs IDE at runs.supachad.com
+
+A web IDE for durable Smithers workflows, served by a Hono server
+(`scripts/chad-smithers/serve-runs.js`) that reads the Smithers SQLite
+DBs directly — full run history across every workflow DB,
+auto-discovering new runs, no Smithers daemon to babysit. Four tabs:
+**Runs** (live-polling list + run detail with task tree, outputs,
+logs, chat, diffs, trace), **Workflows** (interactive mermaid DAG from
+`smithers graph`), **Editor** (CodeMirror read/edit/save of the
+`.jsx`, path-validated), and **Experiments** (the evolutionary
+leaderboard). From the browser the operator can cancel, approve/deny
+an `<Approval>` gate, fork for replay, diff a node, and launch a run.
+Fail-closed auth: `x-smithers-key` (programmatic) **or**
+`Cf-Access-Authenticated-User-Email` (SSO); writes pass an extra
+operator gate. Chad drives the same REST API headlessly via the
+`chad-runs` ESM CLI (health / runs / get / logs / trace / launch /
+cancel / fork / approve / experiments / cat / save). Deploy is a
+launchd agent on `0.0.0.0:7331` behind the existing cloudflared; the
+one remaining step is a Cloudflare dashboard public-hostname route +
+Access app for the subdomain.
+
+### Model fusion + daily NVIDIA model refresh
+
+`workflows/fusion.jsx` runs one prompt across N models in parallel
+(each its own durable task), then a synthesizer fuses them into one
+best answer with a `best_model` pick — the runs IDE gets access to
+**every model Open WebUI does**. The roster stays current via
+`refresh-models.js` (launchd `chad-models-refresh`, daily 04:45):
+fetches NVIDIA's `/v1/models`, filters to chat/agentic, and writes a
+priority-ordered `featured` list to `state/models.json`. New NVIDIA
+open models join the fusion roster the next morning with no manual
+edit. (GLM 5.1 is on the NVIDIA API; 5.2 is not yet — auto-adopted
+when it lands.)
+
+### Two orchestrators, bridged
+
+Settled the chad-spawn vs chad-Smithers question: **keep both, bridge
+them.** chad-spawn stays the GHA-isolated one-shot sub-agent substrate;
+chad-Smithers is the durable workflow orchestrator that can call
+`chad-spawn-gha` to offload one heavy step onto a GH runner via a
+`<GhaTask>` helper (reuses the existing machinery, no parallel GHA
+system). Multi-step/durable/inspectable flows migrate to Smithers;
+mechanical one-shot crons stay plain wrappers. See
+[Runs IDE](runs-ide.md), [Orchestrator](orchestrator.md),
+[Substrates](substrates.md).
+
 ## 2026-06-13
 
 ### Nemotron 3 Ultra 550B + reasoning on by default

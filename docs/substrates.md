@@ -156,6 +156,23 @@ ssh openshell-chad 'echo "Write a haiku about a sandbox" > /tmp/t.md && \
 
 `codex` defaults to `substrate: gha`, so no `--substrate` flag needed.
 
+## Smithers workflows reuse this substrate
+
+The durable [Runs IDE](runs-ide.md) orchestrator (chad-Smithers) does
+**not** build a parallel GHA system — it reuses the exact machinery
+above. A Smithers workflow runs live on the host, but any single heavy
+or isolated step can offload to a GitHub Actions runner via a
+`<GhaTask>` helper that dispatches `chad-spawn-gha` and reconciles its
+`result.json` as that task's output.
+
+The trade-off is the same as for chad-spawn, with one extra
+consideration: GHA runs are **batch**, not live-streamed. The
+dashboard shows host orchestration live, but a GHA-offloaded task only
+updates when its `result.json` reconciles back (runner spin-up +
+`bun install` ≈ 1–2 min). So: **host for interactive / live, GHA for
+heavy / parallel / isolated.** Needs `NVIDIA_API_KEY` as a chad-state
+Actions secret (already set if you followed the bootstrap below).
+
 ## A third substrate, eventually
 
 A **per-spawn k3s pod** would give the isolation of GHA runners with

@@ -158,6 +158,14 @@ Adding a new kind is four files (manifest, policy preset, optionally a
 runner install step, sync) — no recompile, no image rebuild. Details
 in [Orchestrator](orchestrator.md).
 
+The kinds above are **chad-spawn** — imperative one-shot sub-agents.
+A second, complementary orchestrator, **chad-Smithers**, handles
+*durable multi-step workflows* (experiments, model fusion, the
+autonomy ladder) with SQLite-backed crash-resume and a web IDE at
+`runs.supachad.com`. The two are bridged, not exclusive: a Smithers
+workflow can offload a heavy step to the `gha` substrate via
+`chad-spawn-gha`. See [Runs IDE](runs-ide.md).
+
 ## The four memory layers
 
 ```mermaid

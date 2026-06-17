@@ -87,6 +87,16 @@ how Chad works.
 
     [:octicons-arrow-right-24: Front-ends](front-ends.md)
 
+-   :material-sitemap-outline:{ .lg .middle } **Runs IDE**
+
+    ---
+
+    A web IDE for durable Smithers workflows at `runs.supachad.com`.
+    Watch, edit, and launch runs with full history, crash-resume, and
+    model fusion across the whole NVIDIA catalog.
+
+    [:octicons-arrow-right-24: Runs IDE](runs-ide.md)
+
 -   :material-map-outline:{ .lg .middle } **Roadmap**
 
     ---
@@ -104,6 +114,12 @@ The full sequence is in [the changelog](changelog.md). The current
 state of `chad-dev` is what these docs describe — if a claim here
 disagrees with the source, the source wins; please file an issue.
 
+- **Runs IDE at runs.supachad.com.** A web IDE for durable Smithers
+  workflows — run history, live tree, `.jsx` editor, model fusion. See
+  [Runs IDE](runs-ide.md).
+- **Nemotron 3 Ultra 550B + reasoning by default.** Newest NVIDIA
+  open model on the hosted profiles; the tool-call harness bug is
+  absent in Ultra.
 - **Phase C — async GHA spawns.** `chad-spawn --async`,
   reconciler cron, branch retention, opencode kind,
   `--binary-override` flag.
