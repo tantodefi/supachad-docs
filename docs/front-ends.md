@@ -143,6 +143,46 @@ custom function, or curate a RAG collection on operator request
 — and what lets the nightly experiment loop materialize automations
 as actual OpenWebUI artifacts.
 
+## Two tiers: full Chad and Chad Lite
+
+A single Open WebUI install serves two kinds of user, isolated by
+account:
+
+- **Full Chad** (the `chad` model) — routes through the shim into the
+  OpenClaw `main` agent: gbrain, memory stores, tools, action gate. For
+  the operators.
+- **Chad Lite** (the `chad-lite` model) — a plain Nemotron Ultra model
+  with a generic system prompt and **no** OpenClaw agent, gbrain, or
+  pod state. Memory and web search come from Open WebUI itself
+  (per-user Memory + a private in-stack **SearXNG**), so a Lite user
+  gets a capable assistant that remembers them and can search the web,
+  while touching none of Chad's agent or anyone else's data. It adds
+  zero pod load and scales to the Cloudflare free-tier 50-seat cap.
+
+This is the lightweight rung of a tiered design (stateless Lite →
+isolated full agent → dedicated pod). The full rationale, resource
+math, the limits of running many OpenClaw agents in one pod, and the
+upgrade path live in the
+[multi-user design doc](https://github.com/tantodefi/NemoClaw/blob/chad-dev/docs/design/multi-user-chad.md).
+
+### Onboarding a user
+
+Auth is **trusted-header SSO**: Cloudflare Access is both the gate and
+the identity source.
+
+- **Add the email to the Cloudflare Access policy** — that is the whole
+  whitelist. There's no separate Open WebUI invite.
+- On first login Open WebUI **auto-provisions** the account from the
+  `Cf-Access-Authenticated-User-Email` header at `DEFAULT_USER_ROLE=user`
+  — an active regular user, not admin, no pending-approval step.
+- Per-user memory, chats, and knowledge populate in `webui.db` on first
+  visit and never cross accounts.
+
+Provisioning the Lite model itself is one script
+(`scripts/openwebui/chad-provision-tier0.sh`); web search is the
+SearXNG container plus a one-time toggle in admin → Settings → Web
+Search.
+
 ## Persistence
 
 `docker-compose.yml` mounts a named volume for Open WebUI's
