@@ -4,6 +4,23 @@ A curated record of what shipped on `chad-dev`. Hand-edited from
 git log; not exhaustive. Conventional Commits scope (`feat(chad/*)`)
 maps to the headings below.
 
+## 2026-06-17
+
+### Chad Lite — a stateless tier for new users + SearXNG web search
+
+A lightweight rung for onboarding more Open WebUI users without sharing
+the operators' agent or memory. **Chad Lite** (`chad-lite` model) is
+plain Nemotron Ultra + a generic prompt with **no** OpenClaw agent,
+gbrain, or pod state — memory and web search come from Open WebUI
+itself (per-user Memory + a private in-stack **SearXNG**, json +
+`limiter:false`, keyless, never host/internet-exposed). Isolated by
+account, zero new pod load, scales to the Cloudflare 50-seat cap.
+Ships with `chad-provision-tier0.sh`, a `chad-webui models
+--access-control` passthrough, and the multi-user design doc (tiers,
+the limits of many OpenClaw agents in one pod, and the auth flow:
+Cloudflare's list is the whitelist; Open WebUI auto-provisions on first
+login at `DEFAULT_USER_ROLE=user`). See [Front-ends](front-ends.md).
+
 ## 2026-06-16
 
 ### Runs IDE at runs.supachad.com
