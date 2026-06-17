@@ -179,7 +179,9 @@ first.
    LTM + workspace `MEMORY.md` + the last week of daily memory files.
 5. Writes proposals to
    `curator-runs/<utc>/proposals.json` — **draft-only**. The operator
-   (or a future `chad-memory-apply` cron) reviews before applying.
+   reviews and applies; the curator and the `memory-curator.jsx`
+   workflow are both `Approval`-gated, and pre-mutation snapshots make
+   any apply reversible.
 
 The output schema:
 

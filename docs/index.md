@@ -97,14 +97,14 @@ how Chad works.
 
     [:octicons-arrow-right-24: Runs IDE](runs-ide.md)
 
--   :material-map-outline:{ .lg .middle } **Roadmap**
+-   :material-map-outline:{ .lg .middle } **Capabilities & boundaries**
 
     ---
 
-    What's shipped, what's deferred, what's deliberately out of
-    scope. Phase 2 follow-ups and the reasoning behind each "no".
+    What Chad does today, and what the design deliberately refuses to
+    do. Current state, plus the reasoning behind each permanent "no".
 
-    [:octicons-arrow-right-24: Roadmap](roadmap.md)
+    [:octicons-arrow-right-24: Capabilities & boundaries](roadmap.md)
 
 </div>
 
@@ -117,18 +117,17 @@ disagrees with the source, the source wins; please file an issue.
 - **Runs IDE at runs.supachad.com.** A web IDE for durable Smithers
   workflows — run history, live tree, `.jsx` editor, model fusion. See
   [Runs IDE](runs-ide.md).
+- **Two orchestrators, bridged.** chad-spawn (one-shot, GHA-isolated)
+  plus chad-Smithers (durable workflows); `runSpawn()` offloads heavy
+  workflow steps onto a GH runner. Five chad-spawn / cron features now
+  run as crash-resumable workflows.
 - **Nemotron 3 Ultra 550B + reasoning by default.** Newest NVIDIA
   open model on the hosted profiles; the tool-call harness bug is
   absent in Ultra.
-- **Phase C — async GHA spawns.** `chad-spawn --async`,
-  reconciler cron, branch retention, opencode kind,
-  `--binary-override` flag.
+- **Async GHA spawns.** `chad-spawn --async`, reconciler cron, branch
+  retention, opencode kind, `--binary-override` flag.
 - **NVIDIA fallback in the GHA runner.** codex / opencode auto-route
   to `integrate.api.nvidia.com` when no `OPENAI_API_KEY` is set.
-- **GHA substrate landed.** Sub-agents can spawn into a per-job
-  GitHub Actions runner — popebot-style branch-as-job-record.
-- **Hermes-style memory curator.** Weekly draft-only consolidation
-  pass over the LTM. Pre-mutation snapshots make it reversible.
 
 ## What this site is not
 

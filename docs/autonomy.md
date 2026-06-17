@@ -133,20 +133,19 @@ and applies a narrow safe-list of cron tuning changes:
 Anything riskier (new kind manifest, schedule change, code edit)
 stays draft-only.
 
-### Future: `chad-memory-apply`
+Memory consolidation is draft-only the same way: the curator (and the
+`memory-curator.jsx` workflow) propose changes behind an `Approval`;
+the operator applies. Pre-mutation snapshots make any apply reversible.
 
-Reads the latest curator proposals from
-`curator-runs/<utc>/proposals.json` and applies the safe ones —
-add to `MEMORY.md`, archive an LTM entry. Pre-mutation snapshot
-required. Currently draft-only; the apply step is wave-2 of the
-curator work.
+## The autonomy gradient
 
-## The autonomy roadmap
+Earning autonomy gradually is the core governance model, not a feature
+backlog: each action sits at a trust level, and a level only rises when
+the audit log shows the judgment is reliable enough. Today's policy has
+very few `auto` entries by design. The "Earned" column is the ceiling a
+given action can reach as trust accrues — the gate, not a ship date:
 
-The roadmap is the diff between the current policy and the eventual
-policy. Today's policy has very few `auto` entries by design:
-
-| Action | Today | Eventually |
+| Action | Today | Earned ceiling |
 |---|---|---|
 | email_reply (allowlisted senders) | auto | auto |
 | email_reply (everyone else) | block | draft (after triage maturity) |

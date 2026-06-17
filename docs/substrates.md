@@ -173,10 +173,5 @@ updates when its `result.json` reconciles back (runner spin-up +
 heavy / parallel / isolated.** Needs `NVIDIA_API_KEY` as a chad-state
 Actions secret (already set if you followed the bootstrap below).
 
-## A third substrate, eventually
-
-A **per-spawn k3s pod** would give the isolation of GHA runners with
-the L7 policy enforcement of the local substrate — useful for
-sub-agents that want both. Not built; tracked on the
-[Roadmap](roadmap.md). The full design lives in the
-[upstream design doc](https://github.com/tantodefi/NemoClaw/blob/chad-dev/docs/design/spawn-as-github-run.md).
+There are two substrates: `local` and `gha`. A spawn picks one; that's
+the whole choice.

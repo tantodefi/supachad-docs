@@ -40,17 +40,32 @@ open models join the fusion roster the next morning with no manual
 edit. (GLM 5.1 is on the NVIDIA API; 5.2 is not yet — auto-adopted
 when it lands.)
 
-### Two orchestrators, bridged
+### Two orchestrators, bridged — and the first ports
 
 Settled the chad-spawn vs chad-Smithers question: **keep both, bridge
 them.** chad-spawn stays the GHA-isolated one-shot sub-agent substrate;
 chad-Smithers is the durable workflow orchestrator that can call
-`chad-spawn-gha` to offload one heavy step onto a GH runner via a
-`<GhaTask>` helper (reuses the existing machinery, no parallel GHA
-system). Multi-step/durable/inspectable flows migrate to Smithers;
-mechanical one-shot crons stay plain wrappers. See
-[Runs IDE](runs-ide.md), [Orchestrator](orchestrator.md),
-[Substrates](substrates.md).
+`chad-spawn` to offload one heavy step onto a GH runner (reuses the
+existing machinery, no parallel GHA system). Then built it:
+
+- **The bridge** — `scripts/chad-smithers/lib/spawn.js`. `runSpawn()`
+  runs inside a durable Smithers task and shells out to `chad-spawn`;
+  never throws (always resolves to a `result.json` shape). Transports:
+  host stub (`CHAD_SPAWN_STUB=1`), SSH-to-pod (`CHAD_SPAWN_SSH`, task
+  streamed in / result back since scp is blocked), or local. Ports
+  `chad-route` → `route()` and issue scoring → `scoreIssue()` as
+  unit-tested plain JS (8/8).
+- **Migrated multi-spawn flows** — `issue-triage.jsx` (fetch →
+  score+route → `Parallel` spawn per issue → report; verified
+  end-to-end) and `content-pipeline.jsx` (research→draft→review spawns
+  → reviewer-gated `Approval` → publish).
+- **Ported cron features** — `self-improve.jsx`, `memory-curator.jsx`,
+  and `log-digest.jsx` (verified on the host's 29 service logs). All
+  **shadow-safe by default**.
+
+Mechanical one-shot crons (backups, prune, gc, budget-audit) stay plain
+wrappers — Smithers is overhead there. See [Runs IDE](runs-ide.md),
+[Orchestrator](orchestrator.md), [Substrates](substrates.md).
 
 ## 2026-06-13
 
@@ -257,7 +272,7 @@ every job.
 
 ## 2026-05-06
 
-### Phase C — async sub-agent spawns
+### Async sub-agent spawns
 
 `chad-spawn --async --substrate gha` now returns a task_id immediately
 and writes a `running` ledger entry. The new `chad-spawn-poll` cron

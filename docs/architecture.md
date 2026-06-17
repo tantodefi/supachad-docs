@@ -239,10 +239,8 @@ The `local` substrate is right when the sub-agent needs gbrain, the
 sandbox source clone, or NVIDIA inference. The `gha` substrate is
 right when the sub-agent is self-contained — codex writing a markdown
 report from a prompt, opencode running against an external repo.
-
-A future `pod` substrate (Phase D in the design doc) would give the
-isolation of GHA runners with the L7 policy enforcement of the local
-substrate. Not built yet.
+Durable Smithers workflows also offload heavy steps to `gha` through
+the `runSpawn()` bridge — see [Runs IDE](runs-ide.md).
 
 ## Where the source lives
 

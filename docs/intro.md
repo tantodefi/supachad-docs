@@ -88,11 +88,11 @@ action regardless of policy. `rm` it to resume.
 - **Not a chatbot.** There's a chat surface (OpenWebUI), but the
   primary work happens unattended.
 - **Not multi-tenant.** One operator account, one mailbox, one
-  GitHub identity. Multi-Chad scheduling is a future direction.
+  GitHub identity.
 - **Not reproducible without infrastructure.** Chad needs Proton,
   Anthropic (optional), NVIDIA inference, and a private state repo.
   See [Reproducing](reproducing.md) for the full picture.
-- **Not unsupervised.** The autonomy roadmap is gradual on purpose.
+- **Not unsupervised.** The autonomy gradient is gradual on purpose.
   New action types and new senders go through human review before
   they auto-anything.
 
