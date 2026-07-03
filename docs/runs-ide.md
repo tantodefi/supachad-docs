@@ -15,21 +15,26 @@ those DBs directly. A stalled run is now *visible*, not invisible.
 
 ## What you see
 
-The dashboard is four tabs over a dark, dependency-light UI (vanilla
+The dashboard is **seven tabs** over a dark, dependency-light UI (vanilla
 JS + two CDN libs: CodeMirror for the editor, mermaid for the DAG).
 
 ![Runs dashboard — run list and live run detail](assets/screenshots/runs-dashboard.png)
 
 | Tab | What it shows |
 |---|---|
-| **Runs** | Every run across every workflow DB, newest first. Live-polls (5 s for the list, 2.5 s while a run is active). Click a run for the task tree, per-node outputs, logs, chat, and diffs. |
-| **Workflows** | The available `.jsx` workflow files, each rendered as an interactive DAG (from `smithers graph --format json`). |
-| **Editor** | A CodeMirror view of the workflow source — read *and* edit the `.jsx`, save back to disk (path-validated server-side). |
-| **Experiments** | The evolutionary-experiment leaderboard: variants scored, ranked, retired. |
+| **Runs** | Every run across every workflow DB, newest first. Live-polls (5 s for the list, 2.5 s while a run is active). Click a run for the task tree, per-node outputs (with **per-node token counts** and a **"reasoning hidden" badge**), logs, chat, and diffs. |
+| **Workflows** | The full catalog of `.jsx` files — including scaffolds that have never run (with run counts) — each rendered as an interactive DAG (`smithers graph --format json`). Inline **CodeMirror editor** to read/edit/save the source (path-validated), a **Launch settings drawer** (input JSON, reasoning, timeouts, max-output-tokens, backend, dry-run), and **Re-run ⟳** on any finished run. |
+| **Approvals** | Pending `<Approval>` gates across every DB, plus the **notify-channel config** (which channels the server pushes a waiting gate on). |
+| **Chains** | Workflow chaining — string several workflows into a sequential pipeline; each step launches when the prior reaches `finished`, optionally feeding its output forward. Resume or re-run a failed step. |
+| **Schedules** | The scheduled jobs (launchd timers) — schedule, target workflow, and live status. |
+| **Experiments** | The evolutionary-experiment leaderboard (variants scored, ranked, retired) plus the cost-savings hero metric. |
+| **Directives** | Operator free-text that steers the self-improvement loop, the trace-grounded **DB-signal digest** (failed/stale/low-quality runs), and the **arena fixtures** (static + harvested from real run inputs). |
+
+![Workflows tab — the full catalog with run counts](assets/screenshots/workflows-catalog.png)
 
 ![Workflows tab — interactive DAG of a Smithers workflow](assets/screenshots/workflows-dag.png)
 
-From a run detail you can **cancel**, **approve / deny** an
+From a run detail you can **cancel**, **resume** a stalled run, **approve / deny** an
 `<Approval>` gate, **fork** a run for replay, **diff** any node's
 output, and **launch** a new run of any workflow — all from the browser.
 
@@ -85,23 +90,37 @@ also captures output instead of throwing on non-zero exit, because
 
 ## The REST API
 
-`serve-runs.js` endpoints (all under `/api`):
+`serve-runs.js` endpoints (all under `/api`). Every one has a `chad-runs`
+verb (see below) — the CLI is a 1:1 mirror of the API.
 
 | Method + path | Purpose |
 |---|---|
 | `GET /health` | Liveness + DB count. |
 | `GET /runs` | All runs across all DBs, newest first. |
-| `GET /runs/:id` | One run: task tree + per-node outputs + status. |
-| `GET /runs/:id/logs` | Run logs. |
+| `GET /runs/:id` | One run: task tree + per-node outputs + status + telemetry. |
+| `GET /runs/:id/logs` | Run logs (event stream). |
 | `GET /runs/:id/chat` | Run chat transcript (`smithers chat`). |
 | `GET /runs/:id/diff/:node` | A node's output diff. |
 | `GET /runs/:id/trace/:node` | Token / time / failure attribution for a node. |
-| `GET /experiments` | The experiment leaderboard. |
-| `GET /workflows` | Available workflow files. |
+| `POST /runs/:id/cancel\|resume\|fork` | Run lifecycle (cancel, checkpoint-resume, time-travel fork). |
+| `POST /runs/:id/approve\|deny` | Resolve an autonomy gate (then auto-resume). |
+| `GET /approvals` | Pending gates across all DBs. |
+| `GET/POST /notify-config` | Read / set the channels the server pushes gates on. |
+| `GET /workflows` · `GET /catalog` | Available workflow files · catalog with matched DB + run counts. |
 | `GET /workflow-graph` | `{dag, tree}` from `smithers graph --format json`. |
 | `GET/POST /workflow-file` | Read / write a workflow's `.jsx` source (path-validated). |
-| `POST /launch` | Start a new run of a workflow. |
-| `POST /runs/:id/cancel\|approve\|deny\|fork` | Run lifecycle actions. |
+| `POST /preflight` · `POST /launch` | Validate a launch's settings · start a new run. |
+| `GET /models` · `GET /model-limits` · `GET /model-matrix` | Live roster · per-model ceilings · best-model-per-task grid. |
+| `GET /efficiency` · `GET /schedules` | Tokens + downgrade savings · scheduled jobs + status. |
+| `GET /experiments` | The experiment leaderboard. |
+| `GET /signal` · `GET /fixtures` | Trace-grounded review signal · arena fixture set. |
+| `GET/POST /directives` | Read / set the operator directives steering the loop. |
+| `GET /chains` · `GET /chains/:id` | List chains · one chain's step states. |
+| `POST /chains` · `POST /chains/:id/cancel\|resume\|rerun-step` | Create / cancel / resume / re-run a workflow chain. |
+
+Write endpoints (anything that launches, mutates state, or saves a file) require an
+authenticated operator (Cloudflare Access email or the machine key); reads only need
+the key. See *Auth model* above.
 
 ## chad-runs — the agent's hands
 
@@ -113,27 +132,28 @@ and targets `CHAD_RUNS_URL` (default `127.0.0.1:7331`).
 
 ```bash
 chad-runs health
-chad-runs runs                       # list
-chad-runs get <id>                   # run detail
-chad-runs logs <id>
-chad-runs trace <id> <node>
-chad-runs chat <id>
-chad-runs diff <id> <node>
-chad-runs workflows
-chad-runs graph <workflow>
-chad-runs cat <workflow>             # print .jsx
-chad-runs save <workflow> <file>     # write .jsx
-chad-runs launch <workflow> [--prompt ...]
-chad-runs cancel <id>
-chad-runs fork <id>
-chad-runs approve <id> / deny <id>   # autonomy gates
-chad-runs approvals                  # pending Approval nodes
-chad-runs experiments                # leaderboard
+chad-runs runs                       # list (live + history)
+chad-runs get <id>                   # run detail + telemetry
+chad-runs logs <id> / chat <id> / trace <id> <node> / diff <id> <node>
+chad-runs workflows / catalog        # launchable files / catalog w/ run counts
+chad-runs graph <wf> / cat <wf> / save <wf> <file>
+chad-runs preflight <wf> [--env JSON]          # is this launch safe?
+chad-runs launch <wf> [--input JSON] [--env JSON]
+chad-runs cancel <id> / resume <id> / fork <id>
+chad-runs approvals / approve <id> / deny <id>  # autonomy gates
+chad-runs models / model-limits / model-matrix / efficiency / schedules
+chad-runs experiments                # evolutionary leaderboard
+chad-runs signal [--days N] / fixtures          # self-improvement inputs
+chad-runs directives / set-directives <file>    # steer the loop
+chad-runs notify-config / set-notify <ch1,ch2>  # approval-notify channels
+chad-runs chains / chain <id>                   # workflow chaining
+chad-runs chain-create <file.json> / chain-cancel|resume <id> / chain-rerun <id> --index N
 ```
 
-The `openwebui` skill has a sibling **Smithers/runs** skill
-(`scripts/chad-smithers/SKILL.md`) documenting these verbs with
-worked examples.
+Run `chad-runs` with no args for the grouped help. The CLI mirrors **every**
+endpoint above 1:1. The sibling **Smithers/runs** skill
+(`scripts/chad-smithers/SKILL.md`) documents each verb with worked examples
+(steering the self-improvement loop, driving a chain).
 
 ## Workflow catalog
 
@@ -160,9 +180,30 @@ The "enable side-effects" column is the flag, not a missing feature.
 | `self-improve.jsx` | Cron telemetry → propose tunings → gate → apply | `CHAD_SELFIMPROVE_APPLY=1` |
 | `memory-curator.jsx` | Inactivity-gate → snapshot → propose consolidations → `Approval` | `CHAD_CURATOR_APPLY=1` |
 | `log-digest.jsx` | Cluster host service-log errors → note (quiet if clean) | `CHAD_LOGDIGEST_POST=1` |
+| `token-optimize.jsx` | "Tokenmaxxing": probe whether a cheaper model matches a task's quality → `Approval`-gated downgrade written into `task-profiles.json`. Feeds the Experiments **model × task** matrix. | `CHAD_TOKENOPT_APPLY=1` |
+| `bug-report.jsx` | Chad catches his OWN failures (failed runs/nodes + host logs) → clusters into distinct bugs → `Approval` → `gh issue create` (dedups). | `CHAD_BUGREPORT_POST=1` |
+| `skill-improve.jsx` | Chad proposes ENHANCEMENTS to his own workflows/skills → `Approval` → files GitHub enhancement issues (never edits source). | `CHAD_SKILLIMPROVE_POST=1` |
+| `code-review-loop.jsx` | Iterate a PR review to convergence with the built-in **`<ReviewLoop>`** composite (produce → review → refine until `approved`). Read-only diff, draft-only. | `--input '{"repo":"o/r","pr":N}'`, `CHAD_CODEREVIEW_POST=1` |
+| `dependency-update.jsx` | Keep deps current via **`<ScanFixVerify>`** — triage `npm outdated` safe/review/risky → draft bump set → verify. Proposal only. | `CHAD_DEPUPDATE_APPLY=1` |
+| `debate.jsx` | Adversarial reasoning via **`<Debate>`** — two models argue for/against, a judge rules. The counterpart to `fusion.jsx`. | `--input '{"topic":"…"}'`, `CHAD_DEBATE_POST=1` |
+| `canary-judge.jsx` | Post-deploy verification via **`<Poller>`** — poll a health endpoint until stably healthy or timeout → judge promote/hold/rollback. Advisory. | `--input '{"url":"…/health"}'`, `CHAD_CANARY_POST=1` |
+| `changelog.jsx` | Draft a changelog entry from recent git log → `Approval` → note. A plain `Sequence`. | `CHAD_CHANGELOG_POST=1` |
+| `pr-shepherd.jsx` | Keep open PRs moving — fetch → **deterministic** per-PR action (`lib/pr.js`, no LLM) → one digest of "what's blocked on whom". Read-only, advisory. | `CHAD_PRSHEP_REPO`, `CHAD_PRSHEP_POST=1` |
+| `coverage-loop.jsx` | Raise coverage toward a target via **`<Loop>`** — measure → draft focused tests → re-measure until target/max iters. Draft-only unless `APPLY=1`. | `CHAD_COVERAGE_TARGET`, `CHAD_COVERAGE_APPLY=1` |
 
-The last five are the **ported chad-spawn / cron features** (the keep-both
-decision below). They run on the same dashboard, resume after a crash,
+The seven composite-based workflows landed with the Smithers **0.26 upgrade** and
+lean on Smithers' own **composite components** (`ReviewLoop`, `ScanFixVerify`,
+`Debate`, `Poller`, `Loop`) — the framework's implementation of exactly these
+patterns, so Chad reuses them instead of hand-rolling loops. Routing stays
+deterministic where it can (`pr-shepherd`, `issue-triage`), and fan-outs
+(`fusion`, `token-optimize`) cap concurrency with `<Parallel maxConcurrency>`.
+See [Smithers version](#smithers-version).
+
+The five autonomy-ladder rows (`email-ladder` … `memory-curator`) are the
+**ported chad-spawn / cron features** (the keep-both decision below); the last
+three are Chad's **self-improvement loop** — he profiles his own cost, files his
+own bugs, and proposes his own enhancements, all `Approval`-gated. The Directives
+tab steers what he prioritizes; see [Self-improvement](self-improvement.md). They run on the same dashboard, resume after a crash,
 and route their spawns through the bridge — see
 [Orchestrator](orchestrator.md) for the per-workflow mapping.
 
@@ -227,6 +268,49 @@ tool-call harness bug that affected earlier models is absent in Ultra
 (verified by a tool-call round-trip). Backends: nemotron / local /
 claudecode / codex / anthropic / opencode (the `opencode/big-pickle`
 free model, via Smithers' built-in OpenCode adapter).
+
+## Smithers version
+
+The workspace pins **`smithers-orchestrator ^0.26.1`** (upgraded from 0.23.0;
+previously an unpinned `latest`, which risked a surprise jump). The 0.23→0.26.1
+upgrade landed clean — all workflows graph-validate, the full test suite passes,
+and the dashboard's read + graph + durable-write paths were smoke-tested on 0.26.
+There were **no breaking changes** to `createSmithers`, the JSX components, or the
+CLI across that range. The one thing that could have bitten us — 0.24.0 moving
+`smithers.db` resolution to a `.smithers/` project anchor — doesn't, because the
+runs IDE points the CLI at our **named** DBs via `cliWithDb`'s `smithers.db`
+symlink shim rather than relying on CWD discovery.
+
+Because the runs IDE reads the SQLite DBs directly and ships its own Hono server +
+vanilla-JS dashboard, it doesn't depend on the upstream UI packages that were
+rebuilt (`gateway-client`/`gateway-react`, 0.24.0) or removed (the POC chat/studio
+apps, 0.25.0).
+
+**Features adopted from the upgrade:**
+
+- **Reliable `<Loop>`** (0.24.0 — parallel loops no longer starve, `deps` resolve
+  across loop boundaries). This is what makes `code-review-loop.jsx` safe to ship
+  (iterate-until-clean). The graph renderer draws the loop back-edge.
+- **`<Saga>` / sub-workflows** render with a group badge in the DAG (the renderer
+  walks these container types).
+
+**Deferred, with rationale:**
+
+- **Native masked-child-failure fields** (`failedChildren`/`failedChildKeys`,
+  0.25.1) live on the gateway event API and the run-result object. The dashboard
+  reads SQLite directly, so it keeps **inferring** the "tolerated failure" banner
+  from the `attempts` table (count failed node states on a finished run) — correct
+  for a DB-read architecture, no gateway needed.
+- **Gateway event streaming** (0.24.0) — a headless `smithers gateway` that streams
+  persisted events from detached runs — is the native replacement for the
+  dashboard's 2.5–5 s polling and the hand-rolled `resumeDetached()`. It's the
+  biggest single upgrade available but a larger migration; tracked as future work.
+- **Hermes agent runtime integration** (0.26.0) adds a native Smithers plugin +
+  slash commands + tools. Chad's model routing (`agents.js`) could gain a `hermes`
+  backend here; deferred until there's a reason to add another capable-tier option.
+- **Typed `ctx.output()` / `ctx.outputMaybe()`** (0.25.0) and **workflow input JSON
+  schemas in `inspect`** (0.24.0, could auto-generate the launch-drawer form) — DX
+  niceties, adopt incrementally.
 
 ## Deploying it
 
