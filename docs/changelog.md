@@ -4,6 +4,60 @@ A curated record of what shipped on `chad-dev`. Hand-edited from
 git log; not exhaustive. Conventional Commits scope (`feat(chad/*)`)
 maps to the headings below.
 
+## 2026-07-03
+
+### Composite audit follow-ups: two more workflows, concurrency caps, tested helpers
+
+Audited the 13 pre-composite workflows against the 0.26 composites — verdict: they
+were already well-hardened (fallback + tier-aware timeouts + `continueOnFail` +
+deterministic-first routing), and composites would have *flattened* the richest ones
+(fusion's 3-stage, experiments' persistent Pareto population). Follow-ups from that
+audit: (a) `fusion`/`token-optimize` fan-outs now cap in-flight model calls with
+`<Parallel maxConcurrency>` (fixed a latent node-id collision in fusion too); (b) two
+new workflows — `pr-shepherd.jsx` (deterministic per-PR triage via `lib/pr.js`, no LLM
+for routing) and `coverage-loop.jsx` (built-in **`<Loop>`** measure→fix→re-measure to a
+target); (c) clarified in the docs that `coerceJson` is for raw subprocess stdout, not
+model-task output (Smithers validates that itself). New pure helpers `lib/pr.js` +
+`lib/coverage.js` are unit-tested (lib suite: **51 tests, 0 fail**); all **20**
+workflows graph-validate. See [Runs IDE](runs-ide.md).
+
+## 2026-07-02
+
+### Smithers 0.26 upgrade + five composite-based workflows
+
+Bumped `smithers-orchestrator` 0.23 → **0.26.1** (was an unpinned `latest`).
+Clean upgrade — all workflows graph-validate, tests pass, dashboard read/graph/
+durable-write smoke-tested; no API breakage (the `.smithers/` anchor change from
+0.24 is a non-issue because the IDE points the CLI at named DBs via the
+`smithers.db` symlink shim). Adopted Smithers' **built-in composite components**
+in five new workflows: `code-review-loop.jsx` (**`ReviewLoop`**),
+`dependency-update.jsx` (**`ScanFixVerify`**), `debate.jsx` (**`Debate`** — the
+argue-to-consensus counterpart to fusion's parallel-synthesize), `canary-judge.jsx`
+(**`Poller`**), and `changelog.jsx` (plain `Sequence`). All shadow-safe + gated.
+The `chad-runs` CLI also gained `chain-fork` (copy + re-run a whole chain, source
+untouched). See [Self-improvement](self-improvement.md) and [Runs IDE](runs-ide.md).
+
+## 2026-06-24
+
+### Self-improvement loop: directives, trace-grounded breeding, chaining
+
+The Runs IDE went from four tabs to **seven** (added Approvals,
+Chains, Schedules, Directives). The evolutionary arena's breeding is
+now **trace-grounded**: `lib/signal.js` scans every run DB for
+failed/stale/low-quality runs and `lib/fixtures.js` harvests real run
+inputs as the eval set, so `mutatePrompt()` targets concrete failure
+modes (the GEPA pattern). A new **Directives** tab + `state/directives.json`
+steers both the arena and every agent's system prompt
+(`agents.js#directiveSystem`). **Workflow chaining** strings workflows
+into resumable pipelines (`state/chains/*.json`). Three nightly
+self-improvement workflows landed — `token-optimize` (tokenmaxxing →
+cheaper-model downgrades, with a model×task matrix + efficiency view),
+`bug-report` (Chad files his own bugs), and `skill-improve` (Chad
+proposes his own enhancements) — all `Approval`-gated. The `chad-runs`
+CLI now **mirrors every `serve-runs.js` endpoint 1:1** so Chad drives
+all of it headlessly. See [Self-improvement](self-improvement.md) and
+[Runs IDE](runs-ide.md).
+
 ## 2026-06-17
 
 ### Chad Lite — a stateless tier for new users + SearXNG web search
