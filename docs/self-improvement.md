@@ -153,7 +153,7 @@ source repo by design ([Autonomy](autonomy.md)). The bridge is a constraint-gate
 report — attach "tests pass / size ok / lint clean" evidence to each `skill-improve`
 proposal — so a human PR is one review away without Chad ever auto-writing source.
 The building blocks now exist: [`code-review-loop.jsx`](runs-ide.md#workflow-catalog)
-(built on Smithers' `ReviewLoop`) is the produce→review→converge half, and Smithers'
+(a produce→judge→refine `<Loop>` that converges on `approved`) is the review half, and Smithers'
 own `fix-all-issues` workflow (0.24.2) is the upstream reference for the full
 issue→implement→PR pipeline when it's time to wire it. Chain them:
 `issue-triage → code-review-loop` already runs today as a [chain](#workflow-chaining).
