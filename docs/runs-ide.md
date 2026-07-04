@@ -25,7 +25,7 @@ JS + two CDN libs: CodeMirror for the editor, mermaid for the DAG).
 | **Runs** | Every run across every workflow DB, newest first. Live-polls (5 s for the list, 2.5 s while a run is active). Click a run for the task tree, per-node outputs (with **per-node token counts** and a **"reasoning hidden" badge**), logs, chat, and diffs. |
 | **Workflows** | The full catalog of `.jsx` files — including scaffolds that have never run (with run counts) — each rendered as an interactive DAG (`smithers graph --format json`). Inline **CodeMirror editor** to read/edit/save the source (path-validated), a **Launch settings drawer** (input JSON, reasoning, timeouts, max-output-tokens, backend, dry-run), and **Re-run ⟳** on any finished run. |
 | **Approvals** | Pending `<Approval>` gates across every DB, plus the **notify-channel config** (which channels the server pushes a waiting gate on). |
-| **Chains** | Workflow chaining — string several workflows into a sequential pipeline; each step launches when the prior reaches `finished`, optionally feeding its output forward. Resume or re-run a failed step. |
+| **Chains** | Workflow chaining — string several workflows into a sequential pipeline; each step launches when the prior reaches `finished`, optionally feeding its output forward. Per chain: **Run again** (re-run the whole chain in place), **Resume** (continue a failed/stalled chain from the stuck step), **Fork** (copy to a new run), **Delete**, **Cancel**. A step whose run dies with no heartbeat is auto-marked **stalled** (not left falsely "running"). |
 | **Schedules** | The scheduled jobs (launchd timers) — schedule, target workflow, and live status. |
 | **Experiments** | The evolutionary-experiment leaderboard (variants scored, ranked, retired) plus the cost-savings hero metric. |
 | **Directives** | Operator free-text that steers the self-improvement loop, the trace-grounded **DB-signal digest** (failed/stale/low-quality runs), and the **arena fixtures** (static + harvested from real run inputs). |
@@ -116,7 +116,8 @@ verb (see below) — the CLI is a 1:1 mirror of the API.
 | `GET /signal` · `GET /fixtures` | Trace-grounded review signal · arena fixture set. |
 | `GET/POST /directives` | Read / set the operator directives steering the loop. |
 | `GET /chains` · `GET /chains/:id` | List chains · one chain's step states. |
-| `POST /chains` · `POST /chains/:id/cancel\|resume\|rerun-step` | Create / cancel / resume / re-run a workflow chain. |
+| `POST /chains` · `POST /chains/:id/fork\|run-again` | Create · copy to a new chain · re-run the whole chain in place. |
+| `POST /chains/:id/cancel\|resume\|rerun-step` · `DELETE /chains/:id` | Cancel · resume a failed/stalled chain · re-run from a step · delete a terminal chain. |
 
 Write endpoints (anything that launches, mutates state, or saves a file) require an
 authenticated operator (Cloudflare Access email or the machine key); reads only need
