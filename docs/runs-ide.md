@@ -183,7 +183,7 @@ The "enable side-effects" column is the flag, not a missing feature.
 | `token-optimize.jsx` | "Tokenmaxxing": probe whether a cheaper model matches a task's quality → `Approval`-gated downgrade written into `task-profiles.json`. Feeds the Experiments **model × task** matrix. | `CHAD_TOKENOPT_APPLY=1` |
 | `bug-report.jsx` | Chad catches his OWN failures (failed runs/nodes + host logs) → clusters into distinct bugs → `Approval` → `gh issue create` (dedups). | `CHAD_BUGREPORT_POST=1` |
 | `skill-improve.jsx` | Chad proposes ENHANCEMENTS to his own workflows/skills → `Approval` → files GitHub enhancement issues (never edits source). | `CHAD_SKILLIMPROVE_POST=1` |
-| `code-review-loop.jsx` | Iterate a PR review to convergence with the built-in **`<ReviewLoop>`** composite (produce → review → refine until `approved`). Read-only diff, draft-only. | `--input '{"repo":"o/r","pr":N}'`, `CHAD_CODEREVIEW_POST=1` |
+| `code-review-loop.jsx` | Iterate a PR review to convergence with the **`<Loop>`** primitive + explicit context threading — produce → judge → refine until `approved` or max iters. (Uses raw `<Loop>`, not the `<ReviewLoop>` composite, which doesn't inject the produced work into the reviewer's prompt.) Read-only diff, draft-only. | `--input '{"repo":"o/r","pr":N}'`, `CHAD_CODEREVIEW_POST=1` |
 | `dependency-update.jsx` | Keep deps current via **`<ScanFixVerify>`** — triage `npm outdated` safe/review/risky → draft bump set → verify. Proposal only. | `CHAD_DEPUPDATE_APPLY=1` |
 | `debate.jsx` | Adversarial reasoning via **`<Debate>`** — two models argue for/against, a judge rules. The counterpart to `fusion.jsx`. | `--input '{"topic":"…"}'`, `CHAD_DEBATE_POST=1` |
 | `canary-judge.jsx` | Post-deploy verification via **`<Poller>`** — poll a health endpoint until stably healthy or timeout → judge promote/hold/rollback. Advisory. | `--input '{"url":"…/health"}'`, `CHAD_CANARY_POST=1` |
@@ -191,10 +191,13 @@ The "enable side-effects" column is the flag, not a missing feature.
 | `pr-shepherd.jsx` | Keep open PRs moving — fetch → **deterministic** per-PR action (`lib/pr.js`, no LLM) → one digest of "what's blocked on whom". Read-only, advisory. | `CHAD_PRSHEP_REPO`, `CHAD_PRSHEP_POST=1` |
 | `coverage-loop.jsx` | Raise coverage toward a target via **`<Loop>`** — measure → draft focused tests → re-measure until target/max iters. Draft-only unless `APPLY=1`. | `CHAD_COVERAGE_TARGET`, `CHAD_COVERAGE_APPLY=1` |
 
-The seven composite-based workflows landed with the Smithers **0.26 upgrade** and
-lean on Smithers' own **composite components** (`ReviewLoop`, `ScanFixVerify`,
-`Debate`, `Poller`, `Loop`) — the framework's implementation of exactly these
-patterns, so Chad reuses them instead of hand-rolling loops. Routing stays
+The seven new workflows landed with the Smithers **0.26 upgrade** and lean on
+Smithers' own **composite components** (`ScanFixVerify`, `Debate`, `Poller`,
+`Loop`) where the shape fits. One exception: the `<ReviewLoop>` composite doesn't
+inject the produced work into the reviewer's prompt (nor converge on `approved`),
+so `code-review-loop` hand-rolls produce→judge over `<Loop>` with explicit
+`ctx.outputs` threading — verified against a live PR (iterated to `approved`, no
+"no work provided"). Routing stays
 deterministic where it can (`pr-shepherd`, `issue-triage`), and fan-outs
 (`fusion`, `token-optimize`) cap concurrency with `<Parallel maxConcurrency>`.
 See [Smithers version](#smithers-version).
