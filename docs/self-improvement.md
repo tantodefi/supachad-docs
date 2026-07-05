@@ -44,25 +44,48 @@ flowchart LR
 
 ## Directives: steering the loop
 
-`state/directives.json` is the operator's steering wheel. It's **tracked input**
-with two effects:
+`state/directives.json` is the operator's steering wheel — the **global** default,
+resolved through `lib/directives.js` and honored by the arena and every agent.
+All four fields are live:
 
-1. The free-text `experiments` directive steers the arena's breeding and scoring
-   (reflective mutation — "favor terse, cite-grounded drafts").
-2. `agents.js#directiveSystem(role)` injects the relevant directive into **every
-   agent's system prompt**, so a steer lands across all workflows, not just the
-   arena.
+1. **`experiments`** (free text) steers the arena's breeding + scoring ("favor
+   terse, cite-grounded drafts").
+2. **`creativity`** (`low|moderate|high`) tunes how boldly the reflective-mutation
+   step explores — `high` asks for a genuinely different angle, `low` for a small
+   safe refinement.
+3. **`priorities`** (task-kinds) scope which fixtures the judge scores against, so
+   the arena focuses on the roles you care about.
+4. **`systemPrompts.{all,<role>}`** inject into **every** agent call
+   (`directiveSystem(role)`), so a steer lands across all workflows, not just the arena.
 
 ![Directives tab — operator steering plus the live DB-signal digest](assets/screenshots/directives-tab.png)
 
-Edit it in the **Directives** tab of the dashboard, or programmatically:
+Edit the global set in the **Directives** tab, or programmatically:
 
 ```bash
-chad-runs directives > /tmp/d.json     # read current
-#   …edit /tmp/d.json…
-chad-runs set-directives /tmp/d.json   # lands in the next run + all agent prompts
+chad-runs directives > /tmp/d.json     # read current global
+#   …edit experiments / creativity / priorities / systemPrompts…
+chad-runs set-directives /tmp/d.json   # global — lands in the next run + all agent prompts
 chad-runs signal --days 7              # see what's feeding the next generation
 ```
+
+### Experiment on the directives themselves (per-run override)
+
+Directives are also an **experiment variable**. A run can disable the global set
+and/or carry its own override, so you can A/B a directive without touching the
+global default — the launch drawer (**Workflows → Launch → Directives**) has an
+"Apply global directives" toggle + an override editor, and headless:
+
+```bash
+# breed the arena under a bolder directive for ONE run:
+chad-runs launch experiments.jsx --directives '{"creativity":"high","experiments":"try a radically terser voice"}'
+# test a directive in isolation (ignore the global set for this run):
+chad-runs launch experiments.jsx --no-global --directives '{"experiments":"…"}'
+```
+
+Resolution: `CHAD_DIRECTIVES_OFF=1` ignores the global file; `CHAD_DIRECTIVES_JSON`
+is the per-run override (merges over global; used alone when global is off). Both
+ride the same allowlisted launch env as every other run knob.
 
 The Directives tab also renders the live **DB-signal digest** and the **arena
 fixtures**, so an operator can see exactly what the loop is reacting to.
