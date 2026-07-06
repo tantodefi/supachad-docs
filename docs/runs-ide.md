@@ -191,7 +191,8 @@ The "enable side-effects" column is the flag, not a missing feature.
 | `changelog.jsx` | Draft a changelog entry from recent git log → `Approval` → note. A plain `Sequence`. | `CHAD_CHANGELOG_POST=1` |
 | `pr-shepherd.jsx` | Keep open PRs moving — fetch → **deterministic** per-PR action (`lib/pr.js`, no LLM) → one digest of "what's blocked on whom". Read-only, advisory. | `CHAD_PRSHEP_REPO`, `CHAD_PRSHEP_POST=1` |
 | `coverage-loop.jsx` | Raise coverage toward a target via **`<Loop>`** — measure → draft focused tests → re-measure until target/max iters. Draft-only unless `APPLY=1`. | `CHAD_COVERAGE_TARGET`, `CHAD_COVERAGE_APPLY=1` |
-| `coding-task.jsx` | Chad (nemotron) orchestrates a coding task and offloads the coding to **opencode big-pickle** (isolated spawn, draft-only): plan → code → nemotron review → `Approval`. Never edits the repo; stubs on a bare host. | `--input '{"task":"…"}'`, `CHAD_CODING_APPLY=1` |
+| `coding-task.jsx` | Chad (nemotron) DRIVES a long, validated **opencode big-pickle** build: plan (+ a real validate command) → [ code → validate → assess ] looped until done → Moshi ping → `Approval` → optional draft PR. Coder: `spawn` (isolated pod/GHA, default) or `direct` (host opencode). Never edits the live repo. | `--input '{"task":"…"}'`, `CHAD_CODING_CODER=direct`, `CHAD_CODING_APPLY=1` |
+| `landing-lab.jsx` | Grounded landing-page lab: nemotron distills the real docs into a fact sheet (claim → source) → opencode writes **N distinct pages** per angle using only those facts → nemotron **compares** + **flags any unbacked claim**. Never touches the live landing repo. | `CHAD_LAB_ANGLES="dev\|founder"`, `CHAD_LAB_SOURCES` |
 
 The seven new workflows landed with the Smithers **0.26 upgrade** and lean on
 Smithers' own **composite components** (`ScanFixVerify`, `Debate`, `Poller`,

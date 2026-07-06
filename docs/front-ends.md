@@ -183,6 +183,28 @@ Provisioning the Lite model itself is one script
 SearXNG container plus a one-time toggle in admin → Settings → Web
 Search.
 
+## Phone notifications + approvals (Moshi)
+
+Chad reaches the operator's phone through the [Moshi](https://getmoshi.app) app,
+in two independent ways:
+
+- **One-way push (works everywhere).** `chad-moshi-notify` / `lib/notify.js`'s
+  `moshiPing()` POST to Moshi's device-token webhook (`MOSHI_DEVICE_TOKEN` in
+  `credentials.json`, never committed). This needs **no Moshi Pro and no agent
+  hooks**, so it fires from nemotron sessions, cron, and Smithers workflows — it's
+  the `moshi` approval-notify channel in the runs IDE and the "ping me" step in
+  `coding-task` / `landing-lab` ("build done, review at …").
+- **Interactive approve/deny buttons.** These ride the `moshi-hook` daemon and only
+  appear when the agent session is **routable** — running inside tmux, so
+  `moshi-hook context` reports `kind=tmux` and the daemon can inject the decision
+  back into the pane. A plain-terminal session (`kind=shell`) can only be notified
+  and shows "respond on host". Launch Claude via **`chad-claude`** (a routable-tmux
+  wrapper) to get the buttons; opencode's own sessions are already routable.
+
+The moshi-hook claude hooks go stale when moshi-hook auto-updates (which silently
+breaks notifications); the `dev.nemoclaw.moshi-hook-refresh` launchd job re-installs
+them automatically so alerts keep working.
+
 ## Persistence
 
 `docker-compose.yml` mounts a named volume for Open WebUI's

@@ -4,6 +4,34 @@ A curated record of what shipped on `chad-dev`. Hand-edited from
 git log; not exhaustive. Conventional Commits scope (`feat(chad/*)`)
 maps to the headings below.
 
+## 2026-07-06
+
+### landing-lab, opencode coding pipeline, Moshi phone push
+
+**landing-lab** — a grounded marketing-copy lab: nemotron distills the real docs
+(README + supachad docs) into a fact sheet (each claim tied to a source), opencode
+big-pickle writes several distinct landing pages per angle using ONLY those facts,
+and nemotron compares them and **flags any unbacked/hallucinated claim** (first run:
+developer-depth 93/100 vs founder-outcomes 78/100, 5 claims flagged). Not a re-skin —
+original copy backed by technical truth. Never touches the live landing repo.
+
+**coding-task v2** — Chad (nemotron) drives a long, *validated* opencode big-pickle
+build: plan (+ a real validate command) → [ code → validate → assess ] looped to
+convergence → Moshi ping → Approval gate → optional draft PR (doubly gated; never
+auto-writes the repo). Two coder paths: `spawn` (isolated pod/GHA, default) and
+`direct` (host opencode).
+
+**opencode coder (`lib/opencode.js`)** — root-caused why opencode "wrote 0 files":
+it only engages its tool loop when launched **under a shell with stdout→file** (a
+direct node pipe runs it degraded); now runs `sh -c 'opencode run "$OC_TASK" … >log'`
+with `--pure` (autonomous, no plugin clutter), isolated `/tmp` workdir.
+
+**Moshi phone notifications** — device-token push (`chad-moshi-notify` /
+`lib/notify.js`) works from nemotron/cron/workflows with no Pro or claude-hook; wired
+as the `moshi` approval channel. Approve/deny **buttons** need a routable (tmux)
+session — `chad-claude` launches Claude that way. `dev.nemoclaw.moshi-hook-refresh`
+self-heals stale hooks. See [Front-ends](front-ends.md#phone-notifications-approvals-moshi).
+
 ## 2026-07-03
 
 ### Composite audit follow-ups: two more workflows, concurrency caps, tested helpers
