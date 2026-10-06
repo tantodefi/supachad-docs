@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # sync-from-nemoclaw.sh — Pulls selected source files from the parent
-# tantodefi/NemoClaw repo (chad-dev branch) into the docs/ tree, with
+# tantodefi/supachad repo (chad-dev branch) into the docs/ tree, with
 # an explicit allowlist of what's safe to publish.
 #
 # Run when source has moved meaningfully — chad-readme.md, the
@@ -37,9 +37,9 @@ done
 if [ ! -d "$source_path" ]; then
   work="$(mktemp -d -t nemoclaw-sync-XXXXXX)"
   trap 'rm -rf "$work"' EXIT
-  echo "==> cloning tantodefi/NemoClaw#${ref} → $work"
+  echo "==> cloning tantodefi/supachad#${ref} → $work"
   git clone --depth 1 --branch "$ref" \
-    https://github.com/tantodefi/NemoClaw.git "$work"
+    https://github.com/tantodefi/supachad.git "$work"
   source_path="$work"
 fi
 
@@ -87,7 +87,7 @@ for entry in "${syncs[@]}"; do
   src_rel="${entry%%:*}"
   tmp="$(mktemp)"
   {
-    echo "<!-- AUTO-SYNCED FROM tantodefi/NemoClaw — DO NOT EDIT HERE -->"
+    echo "<!-- AUTO-SYNCED FROM tantodefi/supachad — DO NOT EDIT HERE -->"
     echo "<!-- source: ${src_rel} · ref: ${ref} · synced: ${ts} -->"
     echo
     cat "$dst"
