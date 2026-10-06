@@ -83,6 +83,7 @@ plugins:
 
 nav:
   - Home: index.md
+  - Get started: get-started.md
   - Introduction: intro.md
   - Architecture:
     - Overview: architecture.md

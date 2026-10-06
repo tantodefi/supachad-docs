@@ -5,21 +5,30 @@ title: Supachad docs
 # Supachad
 
 <p style="font-size: 1.15rem; color: var(--md-default-fg-color--light); max-width: 38em;">
-An always-on agent that runs while you sleep. Sandboxed, budgeted,
-earns autonomy gradually. These docs cover the architecture, the
-runtime contracts, and the operational surface — what Chad is and
-how Chad works.
+An always-on AI agent — use the hosted app in a minute, or self-host the
+whole stack. Free to start (50 messages a day, no card), pay-as-you-go
+credits when you need more, or premium for the full agent. These docs cover
+getting started, the architecture, and the operational surface.
 </p>
 
 <div class="grid cards" markdown>
 
--   :material-rocket-launch:{ .lg .middle } **New here?**
+-   :material-rocket-launch:{ .lg .middle } **Use Chad now**
 
     ---
 
-    Read [the introduction](intro.md) for the 90-second tour. What
-    Chad is, what makes it different from a chat agent, and the three
-    properties that drive every architectural decision.
+    The fastest path: sign up, pick a plan (Free needs no card), and launch
+    the hosted app. Free, pay-as-you-go credits, or premium.
+
+    [:octicons-arrow-right-24: Get started](get-started.md)
+
+-   :material-book-open-variant:{ .lg .middle } **New here?**
+
+    ---
+
+    Read [the introduction](intro.md) for the 90-second tour — what Chad is,
+    how it differs from a chat agent, and the three properties behind every
+    architectural decision.
 
     [:octicons-arrow-right-24: Introduction](intro.md)
 
