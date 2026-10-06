@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # sync-from-nemoclaw — daily pull of allowlisted source files from
-# tantodefi/NemoClaw#chad-dev into docs/_source/. If anything changed,
+# tantodefi/supachad#chad-dev into docs/_source/. If anything changed,
 # opens (or updates) a PR. That PR's preview deployment lets you
 # inspect the proposed update at <branch>.supachad-docs.pages.dev
 # before merge → production.
@@ -63,10 +63,10 @@ jobs:
           # updates the existing PR rather than spawning new ones daily.
           branch: chore/sync-from-nemoclaw
           base: main
-          title: 'chore(docs): sync from tantodefi/NemoClaw'
-          commit-message: 'chore(docs): sync from tantodefi/NemoClaw (auto)'
+          title: 'chore(docs): sync from tantodefi/supachad'
+          commit-message: 'chore(docs): sync from tantodefi/supachad (auto)'
           body: |
-            Auto-sync from `tantodefi/NemoClaw#${{ inputs.ref || 'chad-dev' }}`.
+            Auto-sync from `tantodefi/supachad#${{ inputs.ref || 'chad-dev' }}`.
 
             Files in `docs/_source/` were re-pulled by
             `scripts/sync-from-nemoclaw.sh`. The auto-banner at the top
