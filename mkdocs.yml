@@ -1,8 +1,8 @@
 site_name: Supachad
 site_description: An always-on agent that runs while you sleep. Sandboxed, budgeted, earns autonomy gradually.
 site_url: https://docs.supachad.com
-repo_url: https://github.com/tantodefi/NemoClaw
-repo_name: tantodefi/NemoClaw
+repo_url: https://github.com/tantodefi/supachad
+repo_name: tantodefi/supachad
 edit_uri: edit/chad-dev/
 
 theme:
@@ -105,7 +105,7 @@ nav:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/tantodefi/NemoClaw
+      link: https://github.com/tantodefi/supachad
   generator: false
 
 copyright: >
