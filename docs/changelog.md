@@ -1,8 +1,58 @@
 # Changelog
 
-A curated record of what shipped on `chad-dev`. Hand-edited from
-git log; not exhaustive. Conventional Commits scope (`feat(chad/*)`)
-maps to the headings below.
+A curated record of what shipped on `supachad` (the `chad-dev`/`main` line).
+Hand-edited from git log; not exhaustive.
+
+## 2026-10-06
+
+### Chad goes hosted: free tier, credits, and premium billing
+
+Chad is now a hosted product, not just a self-host blueprint. Sign up at
+[supachad.com](https://supachad.com) and launch at [chad.supachad.com](https://chad.supachad.com):
+
+- **Free** — 50 messages a day on Chad Lite, no card.
+- **Credits** — pay-as-you-go packs via Square hosted checkout; 1 credit = 1 message, no daily cap, credits don't expire.
+- **Premium** — the full Chad agent, unlimited.
+
+New signup + onboarding flow on the landing page; an **atomic credit ledger on
+Cloudflare D1**; a Square checkout + signature-verified webhook that tops up credits
+or grants premium; and **per-message metering** in the OpenWebUI rate-limit filter
+with a live "credits remaining" status that falls back to the free cap if the billing
+worker is unreachable. See [Get started](get-started.md).
+
+## 2026-10-04
+
+### Caught up with upstream NemoClaw (4,928 commits) + renamed to supachad
+
+Merged roughly five months of `NVIDIA/NemoClaw` — **4,928 commits** — into the fork,
+resolving 29 conflicts while preserving Chad's network policies, gbrain/gstack
+plugins, and live version pins (upstream had moved eslint→oxlint, rewritten the CLI,
+and bumped the sandbox base image to Debian 13). The fork is now
+**`tantodefi/supachad`**. Added a lean, fork-friendly **CI gate** (typecheck + config
+validation on every push — upstream's full matrix needs NVIDIA infra a fork can't
+run) and a **weekly, PR-gated upstream-sync** so the fork stays current without
+hand-merging.
+
+## 2026-10-01
+
+### In-browser terminal, OpenWebUI v0.11.4, free-tier limit, gbrain embed rescue
+
+A real **WebVM + Docker terminal inside OpenWebUI**, with an agent bridge so Chad can
+type commands you watch live. **chad-webui** wired to the OpenWebUI 0.11.4 API
+(calendar, notes, automations, memories). A per-user **free-tier daily message cap**.
+And a **gbrain rescue** — migrated embeddings off an EOL model to `nemotron-3-embed-1b`
+after the old endpoint began returning 410 (column migrated to 2048-dim vectors),
+restoring semantic search. The shim's operator-allowlist gate is now fail-closed.
+
+## 2026-07-07
+
+### chad-ops dispatcher + mobile runs IDE + allowlist hardening
+
+`chad-ops.sh` codifies the recurring pod operations behind one dispatcher —
+**doctor** (read-only health), **recover** (idempotent cold-start), **deploy**,
+**gate-sync** — so an interrupted recovery finishes by simply re-running. The runs IDE
+gained a **responsive mobile layout with a hamburger nav**, and the Chad-lite operator
+allowlist gate was hardened to **fail-closed**.
 
 ## 2026-07-06
 
@@ -421,31 +471,3 @@ reversible rollback). Memory-lancedb `autoCapture` self-healed to
 empty LTM. Step 3f actively removes gbrain from `mcp.servers` if
 re-introduced (PGLite single-process file lock means MCP serve
 blocks every cron wrapper that uses gbrain CLI).
-
-## 2026-05-05
-
-### Memory plugin stack wired
-
-memory-lancedb (NV-Embed-v1 4096-dim) + memory-wiki (bridge mode) +
-active-memory + tokenjuice configured and loaded. Two-layer architecture:
-semantic LTM via lancedb, named-entity wiki for retrieval-by-name.
-
-### Self-improvement loops closed
-
-`chad-self-improve` weekly cron, `chad-budget-audit` weekly cron,
-`chad-proposal-apply` daily cron with safe-list. Cron-tuning
-proposals can land via the gate; anything riskier stays draft-only.
-
-## 2026-04-30 → 2026-05-04
-
-NIM embeddings overlay and gbrain integration. Workflow regression
-matrix with variants and parallel sub-agent harness. Fitness kind +
-brain-first pattern. Premium routing with Anthropic side-channel.
-Per-task budget profiles + model registry. Hybrid Phase-1/Phase-2
-cron wrapper infrastructure.
-
----
-
-The current state of `chad-dev` is what the rest of these docs
-describe. If anything here feels stale, the source repo is the
-canonical reference — please file an issue.
