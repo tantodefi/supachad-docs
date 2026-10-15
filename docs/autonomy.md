@@ -69,6 +69,14 @@ overrides. `chad-action-gate check email_reply operator@example.com`
 returns `auto`; the same check against an unknown sender returns
 `block`.
 
+!!! warning "October 14 fix: the email gate was not enforced"
+    `chad-autosend-replies` read the gate's exit code after `|| true`, so it
+    always saw `0` and classified every draft as auto-sent — review, block,
+    budget, and kill-switch results were ignored. It now captures the real exit
+    code. The same day, a host reboot had wiped `auto-actions.json`, so every
+    action fell through to `block` until `chad-ops restore-runtime` restored it
+    from `chad-state`.
+
 ## The kill switch
 
 A single file controls the whole policy:

@@ -159,7 +159,7 @@ near-term roadmap:
   single-workspace supervision and adds the self-improvement tabs (Directives,
   Experiments, Chains). What `burns` has that's on our list: **multi-repo/workspace
   aggregation**, **real-time event streaming** (the Smithers 0.24 gateway would give
-  us this natively — see [Runs IDE](runs-ide.md#smithers-version-upgrade-path)), and
+  us this natively — see [Runs IDE](runs-ide.md#smithers-version)), and
   **AI-assisted workflow authoring** in the editor.
 - **Nous Hermes self-evolution** uses DSPy + **GEPA (Genetic-Pareto Prompt
   Evolution)** with **trace-grounded mutations** — read execution traces to learn
