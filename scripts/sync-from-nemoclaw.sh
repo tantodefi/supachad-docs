@@ -57,6 +57,7 @@ declare -a syncs=(
   "docs/operations/chad-workflows.md:_source/workflows.md"
   "docs/operations/gbrain.md:_source/gbrain-ops.md"
   ".github/skills/chad-orchestrator/SKILL.md:_source/orchestrator-skill.md"
+  "docs/operations/chad-ops.md:_source/chad-ops.md"
 )
 
 mkdir -p "${docs}/_source"
@@ -85,6 +86,28 @@ for entry in "${syncs[@]}"; do
   dst="${docs}/${dst_rel}"
   [ -f "$dst" ] || continue
   src_rel="${entry%%:*}"
+  # Repo-relative links (chad-skills.md, ../design/x.md, .github/…) don't exist
+  # on this site and fail `mkdocs build --strict`; point them at GitHub.
+  SRC_REL="$src_rel" REF="$ref" python3 - "$dst" <<'PY'
+import os, re, sys
+path = sys.argv[1]
+base = os.path.dirname(os.environ["SRC_REL"])
+ref = os.environ.get("REF") or "main"
+out, fence = [], False
+def fix(m):
+    text, target = m.group(1), m.group(2)
+    if re.match(r"^(?:[a-z][a-z0-9+.-]*:|#|/)", target, re.I):
+        return m.group(0)
+    file, _, frag = target.partition("#")
+    resolved = os.path.normpath(os.path.join(base, file))
+    url = f"https://github.com/tantodefi/supachad/blob/{ref}/{resolved}"
+    return f"[{text}]({url}{'#' + frag if frag else ''})"
+for line in open(path, encoding="utf-8").read().split("\n"):
+    if line.lstrip().startswith(("```", "~~~")):
+        fence = not fence
+    out.append(line if fence else re.sub(r"\[([^\]]*)\]\(([^)\s]+)\)", fix, line))
+open(path, "w", encoding="utf-8").write("\n".join(out))
+PY
   tmp="$(mktemp)"
   {
     echo "<!-- AUTO-SYNCED FROM tantodefi/supachad — DO NOT EDIT HERE -->"

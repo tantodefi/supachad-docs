@@ -1,5 +1,5 @@
 <!-- AUTO-SYNCED FROM tantodefi/supachad — DO NOT EDIT HERE -->
-<!-- source: .github/skills/chad-orchestrator/SKILL.md · ref: chad-dev · synced: 2026-10-14T11:56:55Z -->
+<!-- source: .github/skills/chad-orchestrator/SKILL.md · ref: main · synced: 2026-10-15T01:59:39Z -->
 
 ---
 name: chad-orchestrator
@@ -111,7 +111,7 @@ descriptions under 50 lines don't need gstack overhead. The prompt
 templates say "optional" and leave the call to the agent's judgment.
 
 For the full 40-skill catalog see
-[docs/operations/chad-skills.md](../../../docs/operations/chad-skills.md).
+[docs/operations/chad-skills.md](https://github.com/tantodefi/supachad/blob/main/docs/operations/chad-skills.md).
 
 ## Fan-Out Pattern (Multiple Similar Items)
 
@@ -145,7 +145,7 @@ If a spawn batch is interrupted (timeout, crash, budget):
 - [ ] After all done: reply-mail --id=<MSGID> with all articles
 ```
 
-3. Do **not** ask the user what to do. The instruction is still valid —
+1. Do **not** ask the user what to do. The instruction is still valid —
    save the checkpoint and continue on the next heartbeat.
 
 ## When To Use This Skill

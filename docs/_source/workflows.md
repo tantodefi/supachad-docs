@@ -1,5 +1,5 @@
 <!-- AUTO-SYNCED FROM tantodefi/supachad — DO NOT EDIT HERE -->
-<!-- source: docs/operations/chad-workflows.md · ref: chad-dev · synced: 2026-10-14T11:56:55Z -->
+<!-- source: docs/operations/chad-workflows.md · ref: main · synced: 2026-10-15T01:59:39Z -->
 
 ---
 title:
@@ -32,7 +32,7 @@ This page enumerates the named workflow scenarios Chad is expected to handle end
 - **Chad's mailbox:** `supachad@proton.me`. The `email-check-cron` wrapper polls this inbox via `proton-tool`. Any auto-reply Chad sends has `From: supachad@proton.me`.
 - **Admin senders (auto-reply allowlist):** `tantodefi@proton.me`, `tjcooke@protonmail.com` / `tjcooke@pm.me`, plus `supachad@proton.me` itself. See `auto-actions.json` `email_reply` block.
 - **Inbound trigger:** every scenario in this doc starts as a Proton email landing in `supachad@proton.me`'s inbox. Future channels (GitHub mentions, Discord, dashboard `/premium`) plug into the same `chad-intake` contract.
-- **Out of scope here:** outbound-initiated work (cron-driven backups, gbrain dream, self-improve). Those are documented in [chad-devflow.md](chad-devflow.md) §Cron pipeline.
+- **Out of scope here:** outbound-initiated work (cron-driven backups, gbrain dream, self-improve). Those are documented in [chad-devflow.md](https://github.com/tantodefi/supachad/blob/main/docs/operations/chad-devflow.md) §Cron pipeline.
 
 ## Workflow catalog
 
@@ -115,7 +115,7 @@ The rubric is fed to a separate scoring model pass (Tier 2.5 below).
 
 `scripts/chad-cron-wrappers/chad-workflow-batch` (in-sandbox) is a **matrix runner**, not a sequence:
 
-```
+```text
 matrix = fixtures × variants × models × samples
 ```
 
@@ -134,6 +134,7 @@ chad-workflow-batch \
 **Samples** absorb model nondeterminism (Nemotron 3 Super 120B with reasoning ON has nontrivial variance, as did Kimi K2.5 before it was deprecated 2026-04-29). The aggregator averages within `(fixture, variant, model)` cells across samples.
 
 **Output layout** per run:
+
 ```text
 regressions/<UTC-ts>/
   jobs.jsonl                                       # manifest, status updated as run progresses
@@ -175,6 +176,6 @@ In rough dependency order — keep each step small and committable:
 ## Cross-reference
 
 - [EMAIL-POLICY.md](https://github.com/tantodefi/chad-state/blob/main/workspace/EMAIL-POLICY.md) — the in-sandbox routing rules each scenario depends on (lives in chad-state).
-- [chad-devflow.md](chad-devflow.md) — wrapper catalog.
+- [chad-devflow.md](https://github.com/tantodefi/supachad/blob/main/docs/operations/chad-devflow.md) — wrapper catalog.
 - [auto-actions.json](https://github.com/NVIDIA/NemoClaw/blob/main/scripts/chad-cron-wrappers/auto-actions.template.json) — action-gate budgets and per-target overrides.
 - The `fitness` kind manifest at `.github/skills/chad-orchestrator/kinds/fitness.yaml` and `subagent-researcher` policy preset for the brain-first contract used by C1/C2.

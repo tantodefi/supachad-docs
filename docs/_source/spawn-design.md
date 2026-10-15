@@ -1,5 +1,5 @@
 <!-- AUTO-SYNCED FROM tantodefi/supachad — DO NOT EDIT HERE -->
-<!-- source: docs/design/spawn-as-github-run.md · ref: chad-dev · synced: 2026-10-14T11:56:55Z -->
+<!-- source: docs/design/spawn-as-github-run.md · ref: main · synced: 2026-10-15T01:59:39Z -->
 
 ---
 orphan: true
@@ -45,7 +45,7 @@ GitHub Actions workflow run.** Same isolation goal, different substrate.
 A spawn becomes a **branch in `tantodefi/chad-state`** plus a workflow
 trigger:
 
-```
+```text
 chad-spawn --kind <K> --task-file <T>
   ↓
 1. mint task_id (uuid)
