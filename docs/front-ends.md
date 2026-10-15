@@ -185,25 +185,35 @@ Search.
 
 ## Phone notifications + approvals (Moshi)
 
-Chad reaches the operator's phone through the [Moshi](https://getmoshi.app) app,
-in two independent ways:
+Chad reaches the operator's phone through the [Moshi](https://getmoshi.app) app
+in three ways:
 
-- **One-way push (works everywhere).** `chad-moshi-notify` / `lib/notify.js`'s
-  `moshiPing()` POST to Moshi's device-token webhook (`MOSHI_DEVICE_TOKEN` in
-  `credentials.json`, never committed). This needs **no Moshi Pro and no agent
-  hooks**, so it fires from nemotron sessions, cron, and Smithers workflows — it's
-  the `moshi` approval-notify channel in the runs IDE and the "ping me" step in
-  `coding-task` / `landing-lab` ("build done, review at …").
-- **Interactive approve/deny buttons.** These ride the `moshi-hook` daemon and only
-  appear when the agent session is **routable** — running inside tmux, so
-  `moshi-hook context` reports `kind=tmux` and the daemon can inject the decision
-  back into the pane. A plain-terminal session (`kind=shell`) can only be notified
-  and shows "respond on host". Launch Claude via **`chad-claude`** (a routable-tmux
-  wrapper) to get the buttons; opencode's own sessions are already routable.
+- **Approve/Deny cards for Smithers gates.** When a workflow pauses at an
+  approval gate, the runs IDE pushes a yes/no card through `moshi-hook ask`.
+  Tapping **Approve** approves and resumes the run; **Deny** (or dismissing the
+  card) denies it; no answer within 24 hours leaves the gate for the web UI. The
+  card says what approving does and whether that step is live or shadow (shadow
+  steps only log what they would do). Only gates opened in the last 24 hours are
+  pushed. Turn it on with `{"channels":["moshi"]}` in
+  `scripts/chad-smithers/state/notify-config.json`, the same setting the
+  Approvals tab edits.
+- **One-way push.** `chad-moshi-notify` / `moshiPing()` posts to Moshi's
+  device-token webhook (`MOSHI_DEVICE_TOKEN`, never committed). It needs no Moshi
+  Pro and no agent hooks, so it works from nemotron sessions, cron, and
+  workflows; it is also the fallback when a card can't reach the phone.
+- **Claude Code sessions.** Approve/deny buttons, Chat View, and steering need
+  the session to run inside tmux (`moshi-hook context` → `kind: tmux`). Start
+  sessions with **`chad-claude`**, which launches `claude` in a per-directory
+  tmux session that Moshi's session picker finds. A session in a bare terminal
+  can only be notified.
 
-The moshi-hook claude hooks go stale when moshi-hook auto-updates (which silently
-breaks notifications); the `dev.nemoclaw.moshi-hook-refresh` launchd job re-installs
-them automatically so alerts keep working.
+!!! note "Use the plain yes/no card"
+    Multiple-choice cards (`--options`) need a Moshi license: on the free tier
+    the Approve tap never came back. The plain card works everywhere.
+
+The moshi-hook Claude hooks go stale when moshi-hook auto-updates; the
+`dev.nemoclaw.moshi-hook-refresh` launchd job re-installs them so alerts keep
+working.
 
 ## Persistence
 

@@ -84,9 +84,19 @@ hand-written entries accumulate. Worth a wiki page when:
 gbrain query "<question>"      # hybrid vector+graph search
 gbrain search "<keywords>"     # keyword-only (works even if embeddings stale)
 gbrain put-page --title "..." --content "..." --tags ...
-gbrain doctor                  # check embeddings backend
-gbrain stats                   # page/chunk counts
+gbrain health                  # health score + embed coverage
+gbrain stats                   # page/chunk counts (Pages: 0 = empty brain)
 ```
+
+**Embedder:** NVIDIA `nemotron-3-embed-1b` at 2048 dimensions. pgvector's
+HNSW index caps at 2000 dimensions, so the chunk column is `vector(2048)` with
+no HNSW index (a sequential scan, fast at Chad's size). A freshly initialized
+brain comes up at 1536 dimensions, so after any re-init run
+`chad-ops gbrain-dims` before embedding — see [Health & recovery](recovery.md).
+
+**Backup:** the 6-hourly `workspace-backup` cron exports every page as Markdown
+to `brain/` in the private `chad-state` repo. The export is additive, so an empty
+brain never wipes it; the October 14 recovery re-imported 4,076 pages from it.
 
 Two books are fully ingested for the `fitness` sub-agent kind:
 *Starting Strength* (Rippetoe, 313 chunks) and *Becoming a Supple

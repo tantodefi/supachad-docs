@@ -3,6 +3,36 @@
 A curated record of what shipped on `supachad` (the `chad-dev`/`main` line).
 Hand-edited from git log; not exhaustive.
 
+## 2026-10-14
+
+### Reboot recovery, memory restored, phone approvals, and a gate fix
+
+A host reboot after the first OpenShell 0.0.116 cutover attempt left Chad down
+and exposed several gaps. Chad is back on 0.0.20 with everything restored, and
+the gaps are now codified in `chad-ops`:
+
+- **Recovery tooling.** `doctor` now checks reachability first and gates gbrain
+  on page count and embed coverage. `recover` no longer overwrites a surviving
+  brain, restores missing runtime files (the action-gate policy, queue state),
+  re-authenticates `gh`, and reinstalls the Proton wrapper. New
+  `handshake-sync`, `cli-mtls`, and `gbrain-dims` subcommands cover the
+  reboot-only failures. See [Health & recovery](recovery.md).
+- **Memory restored.** gbrain had come back empty; 4,076 pages were re-imported
+  from the `chad-state` export and re-embedded to 100% coverage.
+- **Skills and tools.** All five custom skills and the orchestrator tools now
+  ship through the deploy manifest; four skills and `chad-budget` had only ever
+  been installed by the full setup script. OpenWebUI credentials are synced to
+  the sandbox again, so every `chad-webui` tool works.
+- **Phone approvals.** Smithers approval gates push an Approve/Deny card through
+  Moshi; a tap approves or denies and resumes the run. See
+  [Front-ends](front-ends.md#phone-notifications-approvals-moshi).
+- **Email gate fix.** Auto-reply drafts were classified auto-sent regardless of
+  the action gate. The gate's verdict is now enforced. See
+  [Autonomy & action gate](autonomy.md).
+- **CI.** The fork's static checks pass again after clearing a repo-wide lint
+  backlog; upstream-only workflows (Fern docs publishing, cache-only gbrain jobs)
+  are disabled or removed on the fork.
+
 ## 2026-10-06
 
 ### Chad goes hosted: free tier, credits, and premium billing

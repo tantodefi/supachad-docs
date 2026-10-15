@@ -97,6 +97,7 @@ nav:
     - Self-improvement loop: self-improvement.md
   - Operations:
     - Cron schedule: operations.md
+    - Health & recovery: recovery.md
     - Reproducing Chad: reproducing.md
     - Deploying these sites: deploying.md
   - Project:
