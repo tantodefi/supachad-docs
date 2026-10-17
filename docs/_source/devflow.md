@@ -1,5 +1,5 @@
 <!-- AUTO-SYNCED FROM tantodefi/supachad — DO NOT EDIT HERE -->
-<!-- source: docs/operations/chad-devflow.md · ref: main · synced: 2026-10-15T01:59:39Z -->
+<!-- source: docs/operations/chad-devflow.md · ref: chad-dev · synced: 2026-10-17T10:48:05Z -->
 
 ---
 title:
@@ -80,7 +80,7 @@ Chad's persistence pipeline crosses three boundaries:
 └─────────────────────────────────────────────────────────────┘
 ```
 
-Source code lives in a separate repo (`tantodefi/supachad`, public). See [Backup Policy §1.1](https://github.com/tantodefi/supachad/blob/main/docs/resources/backup-policy.md) for the full source-vs-state split.
+Source code lives in a separate repo (`tantodefi/supachad`, public). See [Backup Policy §1.1](https://github.com/tantodefi/supachad/blob/chad-dev/docs/resources/backup-policy.md) for the full source-vs-state split.
 
 ## Script Catalog
 
@@ -163,7 +163,7 @@ These run unattended via `openclaw cron`. Schedules and budgets live in [`script
 |---|---|
 | `chad-ensure-today-memory` | Ensures `workspace/memory/<YYYY-MM-DD>.md` exists, returns its path. Used by every wrapper that appends to today's memory. |
 | `chad-auth-context` | Manages the AuthContext token used to elevate cron-spawned sub-agents to premium / privileged paths. |
-| `chad-dump-logs` | Tarball of recent gateway/cron/sub-agent logs. See [Log Locations](https://github.com/tantodefi/supachad/blob/main/docs/operations/log-locations.md). |
+| `chad-dump-logs` | Tarball of recent gateway/cron/sub-agent logs. See [Log Locations](https://github.com/tantodefi/supachad/blob/chad-dev/docs/operations/log-locations.md). |
 | `chad-memory-snapshot` | Pre-mutation safety net for the memory stack. Tar-gzips lancedb + wiki vault + workspace + curator-latest into `memory-snapshots/<utc>/`. `create` / `list` / `rollback` / `prune` subcommands; rollback snapshots first so it's reversible; keeps last 5. Called by `chad-memory-curator`. |
 | `_chad-paths.sh` | Sourced by every wrapper. Defines `OPENCLAW_DATA`, `WORKSPACE`, `CRED_FILE`, etc. Single source of truth for filesystem paths. |
 | `auto-actions.template.json` | Template `auto-actions.json` deployed when `chad-setup.sh` finds no existing one. Holds per-channel daily counters and the kill-switch. |
@@ -191,9 +191,9 @@ script catalog above:
   flag was dropped from `chad-spawn.sh` — it isn't supported in
   openclaw 2026.4.x.
 
-For the full skill catalog see [chad-skills.md](https://github.com/tantodefi/supachad/blob/main/docs/operations/chad-skills.md). For the
+For the full skill catalog see [chad-skills.md](https://github.com/tantodefi/supachad/blob/chad-dev/docs/operations/chad-skills.md). For the
 autonomy loops Chad runs on top of these skills see
-[chad-autonomy.md](https://github.com/tantodefi/supachad/blob/main/docs/operations/chad-autonomy.md).
+[chad-autonomy.md](https://github.com/tantodefi/supachad/blob/chad-dev/docs/operations/chad-autonomy.md).
 
 ## State Locations Cheat-Sheet
 
@@ -213,7 +213,7 @@ When something looks wrong, the file you want is usually one of:
 | `/sandbox/.openclaw-data/credentials/` | Bearer token cache | ❌ excluded |
 | `/sandbox/.gbrain/` | PGLite knowledge brain | ✅ via `gbrain export` → `brain/` |
 
-See [Workspace Files §Sectioned Manifest](https://github.com/tantodefi/supachad/blob/main/docs/manage-sandboxes/workspace-files.mdx) for the complete manifest format and [Backup Policy §1.2](https://github.com/tantodefi/supachad/blob/main/docs/resources/backup-policy.md) for the rationale behind exclusions.
+See [Workspace Files §Sectioned Manifest](https://github.com/tantodefi/supachad/blob/chad-dev/docs/manage-sandboxes/workspace-files.mdx) for the complete manifest format and [Backup Policy §1.2](https://github.com/tantodefi/supachad/blob/chad-dev/docs/resources/backup-policy.md) for the rationale behind exclusions.
 
 ## Failure Modes & First Steps
 
@@ -226,23 +226,23 @@ See [Workspace Files §Sectioned Manifest](https://github.com/tantodefi/supachad
 | `chad-sync` reports "cron drift" | Disk and gateway disagree. Run `ssh openshell-chad 'chad-cron-reload'`. |
 | open-webui `chad` model errors / 502 | `npm run webui:chad:status` checks both the SSH tunnel and the in-sandbox shim. Tunnel down → `webui:chad:up` (or `install` for persistence). Tunnel up but `/healthz` fails → shim crashed; the next `workspace-backup` cron will self-heal it, or `ssh openshell-chad 'HOME=/sandbox nohup /usr/local/bin/chad-shim.py >/tmp/chad-shim.log 2>&1 &'`. |
 | `openclaw` CLI commands fail with `gateway closed (1000): no close reason` (dashboard still works) | The gateway can't write its device-pair tmp files. Check `tail /sandbox/.openclaw-data/logs/config-audit.jsonl` for `EACCES` on `/sandbox/.openclaw/devices/*.tmp`. Re-run `bash scripts/chad-setup.sh chad --skip-restore` (step 3c chowns the writable subpaths). Permanent fix is baked into the Dockerfile — only resurfaces on sandboxes built before that change. |
-| `gbrain query` returns no results / `gbrain stats` shows 0 pages | Brain is empty. Re-ingest with `ssh openshell-chad chad-ingest-fitness-books`. ~3 min for 990 chunks. If embed calls fail with `403 CONNECT tunnel failed`, the `gbrain` policy preset is missing `/usr/local/bin/bun` from its binaries allowlist — see [GBrain §L7 policy](https://github.com/tantodefi/supachad/blob/main/docs/operations/gbrain.md#l7-policy--binary-identity). |
+| `gbrain query` returns no results / `gbrain stats` shows 0 pages | Brain is empty. Re-ingest with `ssh openshell-chad chad-ingest-fitness-books`. ~3 min for 990 chunks. If embed calls fail with `403 CONNECT tunnel failed`, the `gbrain` policy preset is missing `/usr/local/bin/bun` from its binaries allowlist — see [GBrain §L7 policy](https://github.com/tantodefi/supachad/blob/chad-dev/docs/operations/gbrain.md#l7-policy--binary-identity). |
 | `gbrain embed` fails with `Incorrect API key provided: unused` | `gbrain init` silently overwrote `config.json` to bare minimum, dropping `openai_api_key` + embed config. The wrapper now exports `OPENAI_API_KEY=unused` as fallback. Re-run `bash scripts/chad-setup.sh chad --skip-restore` — step 3b re-writes the full config after init. |
 | Gateway dies (V8 OOM ~2 GB heap) and stays down | `dev.nemoclaw.chad-gateway-watchdog` launchd job on the host checks the gateway port every 5 min and relaunches with `NODE_OPTIONS=--max-old-space-size=4096` if it's not listening. Inspect with `tail /Users/r/.nemoclaw/openwebui/chad-gateway-watchdog.log`. The respawned gateway also exports `PATH=/sandbox/.openclaw-data/bin:…` and `CHAD_BUDGET_FILE=/sandbox/.openclaw-data/budget.json` for child processes. |
-| Cron job calls a `chad-*` wrapper that crashes / silently no-ops | One of the five tracked wrapper bugs in [`wrapper-bugs.md`](https://github.com/tantodefi/supachad/blob/main/docs/operations/wrapper-bugs.md). Sandbox-writable patched copies live at `/sandbox/.openclaw-data/bin/chad-{budget,issue-triage,issue-triage-cron,mail-check,email-check-cron}` and are persisted by the workspace backup. Cron payloads are pointed at them via absolute path (the openclaw runtime currently appends `/sandbox/.openclaw-data/bin` to PATH instead of prepending, so PATH-based shadowing alone doesn't take). |
+| Cron job calls a `chad-*` wrapper that crashes / silently no-ops | One of the five tracked wrapper bugs in [`wrapper-bugs.md`](https://github.com/tantodefi/supachad/blob/chad-dev/docs/operations/wrapper-bugs.md). Sandbox-writable patched copies live at `/sandbox/.openclaw-data/bin/chad-{budget,issue-triage,issue-triage-cron,mail-check,email-check-cron}` and are persisted by the workspace backup. Cron payloads are pointed at them via absolute path (the openclaw runtime currently appends `/sandbox/.openclaw-data/bin` to PATH instead of prepending, so PATH-based shadowing alone doesn't take). |
 
 ## Next Steps
 
-- [Backup and Restore](https://github.com/tantodefi/supachad/blob/main/docs/manage-sandboxes/backup-restore.mdx) — the canonical persistence guide
-- [Workspace Files](https://github.com/tantodefi/supachad/blob/main/docs/manage-sandboxes/workspace-files.mdx) — what each file does and the sectioned manifest format
-- [Backup Policy](https://github.com/tantodefi/supachad/blob/main/docs/resources/backup-policy.md) — full inventory across all four state layers
-- [Open WebUI Front-End](https://github.com/tantodefi/supachad/blob/main/docs/operations/openwebui.md) — chat UI exposed via Cloudflare Tunnel + Access
-- [Workflow Scenarios](https://github.com/tantodefi/supachad/blob/main/docs/operations/chad-workflows.md) — named email scenarios + regression spec
-- [Log Locations](https://github.com/tantodefi/supachad/blob/main/docs/operations/log-locations.md) — where each log stream lives
-- [Chad Autonomy Loops](https://github.com/tantodefi/supachad/blob/main/docs/operations/chad-autonomy.md) — the six self-driving loops, the wrappers that close them, the sub-agent orchestration contract, and the maintenance crons behind them
-- [Chad Skills Catalog](https://github.com/tantodefi/supachad/blob/main/docs/operations/chad-skills.md) — all 48 registered skills grouped by source
-- [Wrapper Bugs](https://github.com/tantodefi/supachad/blob/main/docs/operations/wrapper-bugs.md) — five tracked argv-vs-env / path bugs in `/usr/local/bin/chad-*` with shim-and-repoint workarounds in place
-- [Autonomous Experiment Lifecycle](https://github.com/tantodefi/supachad/blob/main/docs/operations/chad-experiments.md) — Chad's nightly observe → evaluate → design loop with full autonomy + retire-on-regression. `chad-experiment` CLI + `chad-experiment-cron` deterministic driver (`nightly-experiments` cron) + sibling skill at `/sandbox/.openclaw-data/skills/chad-experiment/`
+- [Backup and Restore](https://github.com/tantodefi/supachad/blob/chad-dev/docs/manage-sandboxes/backup-restore.mdx) — the canonical persistence guide
+- [Workspace Files](https://github.com/tantodefi/supachad/blob/chad-dev/docs/manage-sandboxes/workspace-files.mdx) — what each file does and the sectioned manifest format
+- [Backup Policy](https://github.com/tantodefi/supachad/blob/chad-dev/docs/resources/backup-policy.md) — full inventory across all four state layers
+- [Open WebUI Front-End](https://github.com/tantodefi/supachad/blob/chad-dev/docs/operations/openwebui.md) — chat UI exposed via Cloudflare Tunnel + Access
+- [Workflow Scenarios](https://github.com/tantodefi/supachad/blob/chad-dev/docs/operations/chad-workflows.md) — named email scenarios + regression spec
+- [Log Locations](https://github.com/tantodefi/supachad/blob/chad-dev/docs/operations/log-locations.md) — where each log stream lives
+- [Chad Autonomy Loops](https://github.com/tantodefi/supachad/blob/chad-dev/docs/operations/chad-autonomy.md) — the six self-driving loops, the wrappers that close them, the sub-agent orchestration contract, and the maintenance crons behind them
+- [Chad Skills Catalog](https://github.com/tantodefi/supachad/blob/chad-dev/docs/operations/chad-skills.md) — all 48 registered skills grouped by source
+- [Wrapper Bugs](https://github.com/tantodefi/supachad/blob/chad-dev/docs/operations/wrapper-bugs.md) — five tracked argv-vs-env / path bugs in `/usr/local/bin/chad-*` with shim-and-repoint workarounds in place
+- [Autonomous Experiment Lifecycle](https://github.com/tantodefi/supachad/blob/chad-dev/docs/operations/chad-experiments.md) — Chad's nightly observe → evaluate → design loop with full autonomy + retire-on-regression. `chad-experiment` CLI + `chad-experiment-cron` deterministic driver (`nightly-experiments` cron) + sibling skill at `/sandbox/.openclaw-data/skills/chad-experiment/`
 
 ## Host-side watchdogs (no agent overhead)
 
