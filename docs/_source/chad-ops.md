@@ -1,5 +1,5 @@
 <!-- AUTO-SYNCED FROM tantodefi/supachad — DO NOT EDIT HERE -->
-<!-- source: docs/operations/chad-ops.md · ref: main · synced: 2026-10-15T01:59:39Z -->
+<!-- source: docs/operations/chad-ops.md · ref: chad-dev · synced: 2026-10-17T10:48:05Z -->
 
 ---
 title:
@@ -83,13 +83,17 @@ bash scripts/chad-ops.sh recover
 6. `restore-runtime` restores any **missing** `[runtime]` file from
    `chad-state` (the action-gate policy `auto-actions.json`, `queue/`,
    `memory/feedback-proposals.md`) without touching files that exist. Without
-   `auto-actions.json`, every gated action falls through to `block`.
+   `auto-actions.json`, every gated action falls through to `block`. It also
+   copies `workspace/` from `chad-state` with no-clobber, which brings back
+   `MEMORY.md` and the daily notes under `memory/` while leaving live files
+   (identity, today's notes) untouched. The 2026-10-14 reboot lost 285 such
+   files.
 7. `deploy` pushes every manifest file, including all five custom skills and
    the orchestrator tools (`chad-budget`, `chad-collect`, `chad-route`, and
    others).
 8. `cron-reload` re-registers the 10 crons. If `jobs.json` is missing, it
    fetches `cron/jobs.json` from `chad-state` first.
-9. `bonjour-off`, `skills-register`, `restart-gateway`, `gate-sync`, and
+9. `bonjour-off`, `skills-register`, `mcp-register`, `restart-gateway`, `gate-sync`, and
    `embed-backfill` finish the bring-up.
 
 ## Recover After a Host Reboot
@@ -152,7 +156,7 @@ openshell logs chad --since 15m | grep 'action=deny'
 
 ## Related Docs
 
-- [GBrain in NemoClaw](https://github.com/tantodefi/supachad/blob/main/docs/operations/gbrain.md) covers empty-brain detection, page restore,
+- [GBrain in NemoClaw](https://github.com/tantodefi/supachad/blob/chad-dev/docs/operations/gbrain.md) covers empty-brain detection, page restore,
   and the `gbrain-dims` schema migration.
-- [Chad Devflow Reference](https://github.com/tantodefi/supachad/blob/main/docs/operations/chad-devflow.md) covers `chad-deploy` and the deploy manifest.
-- [Chad Skills Catalog](https://github.com/tantodefi/supachad/blob/main/docs/operations/chad-skills.md) covers the custom skills and their policies.
+- [Chad Devflow Reference](https://github.com/tantodefi/supachad/blob/chad-dev/docs/operations/chad-devflow.md) covers `chad-deploy` and the deploy manifest.
+- [Chad Skills Catalog](https://github.com/tantodefi/supachad/blob/chad-dev/docs/operations/chad-skills.md) covers the custom skills and their policies.

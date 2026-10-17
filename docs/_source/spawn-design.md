@@ -1,5 +1,5 @@
 <!-- AUTO-SYNCED FROM tantodefi/supachad — DO NOT EDIT HERE -->
-<!-- source: docs/design/spawn-as-github-run.md · ref: main · synced: 2026-10-15T01:59:39Z -->
+<!-- source: docs/design/spawn-as-github-run.md · ref: chad-dev · synced: 2026-10-17T10:48:05Z -->
 
 ---
 orphan: true
