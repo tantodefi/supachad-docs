@@ -1,5 +1,5 @@
 <!-- AUTO-SYNCED FROM tantodefi/supachad — DO NOT EDIT HERE -->
-<!-- source: chad-readme.md · ref: main · synced: 2026-10-15T01:59:39Z -->
+<!-- source: chad-readme.md · ref: chad-dev · synced: 2026-10-24T11:05:15Z -->
 
 <!--
   SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
@@ -105,7 +105,7 @@ manifests, orchestrator helpers — belongs in the top `Dockerfile`.
 
 For a **restart or host reboot of an existing sandbox**, use
 `bash scripts/chad-ops.sh doctor` and then `chad-ops recover` instead; see
-[docs/operations/chad-ops.md](https://github.com/tantodefi/supachad/blob/main/docs/operations/chad-ops.md) for the reboot
+[docs/operations/chad-ops.md](https://github.com/tantodefi/supachad/blob/chad-dev/docs/operations/chad-ops.md) for the reboot
 runbook (gateway shadowing on `:8080`, CLI certs, SSH handshake secret).
 `chad-setup.sh` below is for a blank sandbox.
 
@@ -185,7 +185,7 @@ Chad's headline capability in this branch: he can delegate. Not in the
 "fire a prompt" sense, but in the "spawn a typed process under a
 separate L7 policy with a bounded budget and a structured return
 value" sense. The contract lives in
-[`.github/skills/chad-orchestrator/SKILL.md`](https://github.com/tantodefi/supachad/blob/main/.github/skills/chad-orchestrator/SKILL.md)
+[`.github/skills/chad-orchestrator/SKILL.md`](https://github.com/tantodefi/supachad/blob/chad-dev/.github/skills/chad-orchestrator/SKILL.md)
 and is implemented by six baked-in binaries.
 
 ### 4.1 The six helpers
@@ -207,7 +207,7 @@ can iterate on them without a rebuild.
 ### 4.2 Kinds
 
 A kind is a YAML manifest under
-[`.github/skills/chad-orchestrator/kinds/`](https://github.com/tantodefi/supachad/blob/main/.github/skills/chad-orchestrator/kinds)
+[`.github/skills/chad-orchestrator/kinds/`](https://github.com/tantodefi/supachad/blob/chad-dev/.github/skills/chad-orchestrator/kinds)
 describing how to invoke a sub-agent. Today we ship seven:
 
 | Kind | Binary | Policy preset | Substrate | Timeout / Budget | Use case |
@@ -228,7 +228,7 @@ describing how to invoke a sub-agent. Today we ship seven:
   `tantodefi/chad-state` (popebot-style branch-as-job-record). Lets us
   add new providers (codex, opencode) without baking binaries into the
   Chad image. Loses L7 policy enforcement; gains real isolation per
-  spawn. See [docs/design/spawn-as-github-run.md](https://github.com/tantodefi/supachad/blob/main/docs/design/spawn-as-github-run.md).
+  spawn. See [docs/design/spawn-as-github-run.md](https://github.com/tantodefi/supachad/blob/chad-dev/docs/design/spawn-as-github-run.md).
 
 Per-spawn override: `chad-spawn --substrate gha` (or `--substrate local`).
 Per-spawn binary swap: `chad-spawn --binary-override /usr/local/bin/codex --kind writer ...` (the kind's L7 policy still applies, so the override binary must be in its allowlist).
@@ -418,7 +418,7 @@ the canonical `gstack-<verb>` shape (e.g. `gstack-investigate`,
 `gstack-context-save`/`-restore`, `gstack-freeze`/`-unfreeze`,
 `gstack-document-release`, `gstack-make-pdf`, `gstack-codex`, …). The
 full list is enumerated in
-[docs/operations/chad-skills.md](https://github.com/tantodefi/supachad/blob/main/docs/operations/chad-skills.md).
+[docs/operations/chad-skills.md](https://github.com/tantodefi/supachad/blob/chad-dev/docs/operations/chad-skills.md).
 
 `chad-setup.sh` syncs these from `~/.claude/skills/gstack/.openclaw/skills/`
 (note the dot-prefix — that's the canonical host-adapter dir, alongside
@@ -457,13 +457,13 @@ The `fitness` kind is the first application-specific sub-agent and the
 worked example of the brain-first pattern:
 
 - Two books ingested once into gbrain by
-  [`chad-ingest-fitness-books.sh`](https://github.com/tantodefi/supachad/blob/main/.github/skills/chad-orchestrator/scripts/chad-ingest-fitness-books.sh):
+  [`chad-ingest-fitness-books.sh`](https://github.com/tantodefi/supachad/blob/chad-dev/.github/skills/chad-orchestrator/scripts/chad-ingest-fitness-books.sh):
   **Starting Strength** (Rippetoe, 3rd ed., 313 chunks) and
   **Supple Leopard** (Starrett, 677 chunks). The ingest script pulls
   the OCR text from archive.org, chunks on paragraph boundaries with
   a 1-paragraph overlap, and calls `gbrain put` per chunk.
 - The kind manifest
-  [`kinds/fitness.yaml`](https://github.com/tantodefi/supachad/blob/main/.github/skills/chad-orchestrator/kinds/fitness.yaml)
+  [`kinds/fitness.yaml`](https://github.com/tantodefi/supachad/blob/chad-dev/.github/skills/chad-orchestrator/kinds/fitness.yaml)
   instructs the sub-agent to run two `mcp_gbrain_search` calls, build
   the answer *only* from retrieved chunks, cite chunk titles, and emit
   a `NOT_FOUND` sentinel if the books don't cover the topic — no
@@ -674,7 +674,7 @@ tools off, no round-trip surface to fail on).
 
 Chad's primary inference is `nvidia/nemotron-3-super-120b-a12b` via the
 NVIDIA Endpoints free tier (Kimi K2.5 was the previous default; deprecated
-2026-04-29 — see [docs/inference/providers.md](https://github.com/tantodefi/supachad/blob/main/docs/inference/providers.md)
+2026-04-29 — see [docs/inference/providers.md](https://github.com/tantodefi/supachad/blob/chad-dev/docs/inference/providers.md)
 for the migration note). For tasks where Nemotron's review or reasoning
 depth feels shallow (multi-turn coding, deep architecture sketches), Chad
 can escalate to Claude Sonnet/Opus through a tightly gated wrapper.
@@ -711,7 +711,7 @@ Chad's state lives in three places, in order of criticality:
 
 | Tier | Location | Contents | Restored by |
 |---|---|---|---|
-| **1. GitHub** | `tantodefi/chad-state` (private) | `workspace/` including MEMORY.md, memory/, subagents/, queue/, budget.json; `brain/` (every gbrain page as Markdown); `cron/jobs.json` | `chad-restore-from-github`; brain-only and cron-only restores in [docs/operations/gbrain.md](https://github.com/tantodefi/supachad/blob/main/docs/operations/gbrain.md) and `chad-ops cron-reload` |
+| **1. GitHub** | `tantodefi/chad-state` (private) | `workspace/` including MEMORY.md, memory/, subagents/, queue/, budget.json; `brain/` (every gbrain page as Markdown); `cron/jobs.json` | `chad-restore-from-github`; brain-only and cron-only restores in [docs/operations/gbrain.md](https://github.com/tantodefi/supachad/blob/chad-dev/docs/operations/gbrain.md) and `chad-ops cron-reload` |
 | **2. Host tarball** | `~/.nemoclaw/backups/sandbox-state-*.tar.gz` | Full `/sandbox` snapshot streamed via SSH tar | `tar -xzf` + `kubectl cp` |
 | **3. Pod ephemeral fs** | container writable layer (NOT a PVC) | Live filesystem | **NOTHING — see warning below** |
 
@@ -819,7 +819,7 @@ The backup set also grew on this branch:
   docker-compose stack exposing open-webui via a Cloudflare Tunnel. Two
   modes: `--mode=quick` (ephemeral `*.trycloudflare.com`, email/password
   auth, MVP) and tunnel mode (managed tunnel + Cloudflare Access on a
-  real domain, header-trusted SSO). See [`docs/operations/openwebui.md`](https://github.com/tantodefi/supachad/blob/main/docs/operations/openwebui.md).
+  real domain, header-trusted SSO). See [`docs/operations/openwebui.md`](https://github.com/tantodefi/supachad/blob/chad-dev/docs/operations/openwebui.md).
 - **Chad-as-a-model.** `scripts/openwebui/chad-shim.py` is a stdlib-only
   HTTP shim listening on `127.0.0.1:8901` inside the sandbox. It exposes
   an OpenAI-compat `/v1/chat/completions` endpoint and translates each
@@ -842,7 +842,7 @@ What this branch does today.
 
 - **Nested-spawn isolation (`gha` substrate).** Sub-agents spawn onto a
   per-job GitHub Actions runner instead of sharing Chad's container.
-  See [docs/design/spawn-as-github-run.md](https://github.com/tantodefi/supachad/blob/main/docs/design/spawn-as-github-run.md).
+  See [docs/design/spawn-as-github-run.md](https://github.com/tantodefi/supachad/blob/chad-dev/docs/design/spawn-as-github-run.md).
 - **Async spawn.** `chad-spawn --async --substrate gha` returns
   immediately; the ledger carries `substrate` + `async`; `chad-spawn-poll`
   (every 5min) reconciles `result.json`; `chad-spawn-gc` retires branches
@@ -947,14 +947,14 @@ other cron-error hypotheses.
 
 ## 12. Where to look next
 
-- **SKILL.md** — [`/.github/skills/chad-orchestrator/SKILL.md`](https://github.com/tantodefi/supachad/blob/main/.github/skills/chad-orchestrator/SKILL.md) is the operator-facing doc Chad reads at invocation time.
-- **Spawner** — [`/.github/skills/chad-orchestrator/scripts/chad-spawn.sh`](https://github.com/tantodefi/supachad/blob/main/.github/skills/chad-orchestrator/scripts/chad-spawn.sh) is the canonical implementation of the contract.
-- **Setup script** — [`/scripts/chad-setup.sh`](https://github.com/tantodefi/supachad/blob/main/scripts/chad-setup.sh) is the one-command-recovery path.
-- **Devflow catalog** — [`/docs/operations/chad-devflow.md`](https://github.com/tantodefi/supachad/blob/main/docs/operations/chad-devflow.md) lists every wrapper, its schedule, and which symptoms point at it.
-- **Workflow scenarios** — [`/docs/operations/chad-workflows.md`](https://github.com/tantodefi/supachad/blob/main/docs/operations/chad-workflows.md) names the 10 expected inbound email scenarios and how each flows through the pipeline.
-- **Open WebUI front-end** — [`/docs/operations/openwebui.md`](https://github.com/tantodefi/supachad/blob/main/docs/operations/openwebui.md) covers the chat UI, dual-provider setup, and chad-as-a-model persistence.
-- **Policies** — [`/nemoclaw-blueprint/policies/presets/subagent-*.yaml`](https://github.com/tantodefi/supachad/blob/main/nemoclaw-blueprint/policies/presets) are the kind-specific L7 rules.
-- **Dockerfile** — [`/Dockerfile`](https://github.com/tantodefi/supachad/blob/main/Dockerfile) lines ~115–133 wire the orchestrator helpers into the image.
+- **SKILL.md** — [`/.github/skills/chad-orchestrator/SKILL.md`](https://github.com/tantodefi/supachad/blob/chad-dev/.github/skills/chad-orchestrator/SKILL.md) is the operator-facing doc Chad reads at invocation time.
+- **Spawner** — [`/.github/skills/chad-orchestrator/scripts/chad-spawn.sh`](https://github.com/tantodefi/supachad/blob/chad-dev/.github/skills/chad-orchestrator/scripts/chad-spawn.sh) is the canonical implementation of the contract.
+- **Setup script** — [`/scripts/chad-setup.sh`](https://github.com/tantodefi/supachad/blob/chad-dev/scripts/chad-setup.sh) is the one-command-recovery path.
+- **Devflow catalog** — [`/docs/operations/chad-devflow.md`](https://github.com/tantodefi/supachad/blob/chad-dev/docs/operations/chad-devflow.md) lists every wrapper, its schedule, and which symptoms point at it.
+- **Workflow scenarios** — [`/docs/operations/chad-workflows.md`](https://github.com/tantodefi/supachad/blob/chad-dev/docs/operations/chad-workflows.md) names the 10 expected inbound email scenarios and how each flows through the pipeline.
+- **Open WebUI front-end** — [`/docs/operations/openwebui.md`](https://github.com/tantodefi/supachad/blob/chad-dev/docs/operations/openwebui.md) covers the chat UI, dual-provider setup, and chad-as-a-model persistence.
+- **Policies** — [`/nemoclaw-blueprint/policies/presets/subagent-*.yaml`](https://github.com/tantodefi/supachad/blob/chad-dev/nemoclaw-blueprint/policies/presets) are the kind-specific L7 rules.
+- **Dockerfile** — [`/Dockerfile`](https://github.com/tantodefi/supachad/blob/chad-dev/Dockerfile) lines ~115–133 wire the orchestrator helpers into the image.
 
 For anything NemoClaw-wide (CLI, blueprint, plugin, tests), read
-[`CLAUDE.md`](https://github.com/tantodefi/supachad/blob/main/CLAUDE.md) and [`AGENTS.md`](https://github.com/tantodefi/supachad/blob/main/AGENTS.md).
+[`CLAUDE.md`](https://github.com/tantodefi/supachad/blob/chad-dev/CLAUDE.md) and [`AGENTS.md`](https://github.com/tantodefi/supachad/blob/chad-dev/AGENTS.md).

@@ -1,5 +1,5 @@
 <!-- AUTO-SYNCED FROM tantodefi/supachad — DO NOT EDIT HERE -->
-<!-- source: docs/operations/chad-autonomy.md · ref: main · synced: 2026-10-15T01:59:39Z -->
+<!-- source: docs/operations/chad-autonomy.md · ref: chad-dev · synced: 2026-10-24T11:05:15Z -->
 
 ---
 title:
@@ -38,7 +38,7 @@ This page enumerates them and the wrappers that close each one.
 | 3 | **Cron telemetry / budget audit** | `chad-budget-audit` (emits prose + structured JSON) → `chad-proposal-apply` (consumes JSON) | Mon 04:00 UTC + daily 04:30 UTC | last-50 `openclaw cron runs` per task, `/tmp/chad-premium.jsonl`, `task-profiles.json` | recommendation table + `### Proposals (machine-readable)` JSON block to `feedback-proposals.md`; bounded `openclaw cron edit` calls; `## Applied` block |
 | 4 | **Dreaming (gbrain consolidation)** | `chad-gbrain-dream` + dream-digest step | nightly 03:30 UTC | today's `memory/<date>.md`, `events-<date>.jsonl`, workspace doc set, gbrain stale chunks, `gbrain doctor` | gbrain pages upserted; `memory/dream-digest-<date>.md` (24h delta + doctor); `memory/feedback_brain_health_<date>.md` if doctor reports anomalies |
 | 5 | **Skill discovery** | `chad-skill-watch` (daily diff) + `chad-setup.sh` skill-sync (host-driven) | daily 09:00 UTC + on-demand from host | `openclaw skills list --json` vs snapshot at `/sandbox/.openclaw-data/state/skills-snapshot.json`; `~/.claude/skills/gstack/.openclaw/skills/` | snapshot updated; `## Skill catalog diff` block in today's memory; signal-detector skill picks it up next reasoning cycle |
-| 6 | **Autonomous experiment lifecycle** | `chad-experiment-cron` (deterministic observe → evaluate → design driver) + `chad-experiment` CLI | nightly 02:00 UTC | active experiment records, recent memory digest, archived hypotheses | heartbeat observations + LLM evaluation verdicts (promote/retire/extend) in `state/experiments/ledger.jsonl`; new whitelisted OpenWebUI artifacts (notes / automations / memories) via `chad-webui`; one-line summary in today's memory. Detailed in [`chad-experiments.md`](https://github.com/tantodefi/supachad/blob/main/docs/operations/chad-experiments.md). |
+| 6 | **Autonomous experiment lifecycle** | `chad-experiment-cron` (deterministic observe → evaluate → design driver) + `chad-experiment` CLI | nightly 02:00 UTC | active experiment records, recent memory digest, archived hypotheses | heartbeat observations + LLM evaluation verdicts (promote/retire/extend) in `state/experiments/ledger.jsonl`; new whitelisted OpenWebUI artifacts (notes / automations / memories) via `chad-webui`; one-line summary in today's memory. Detailed in [`chad-experiments.md`](https://github.com/tantodefi/supachad/blob/chad-dev/docs/operations/chad-experiments.md). |
 
 Every wrapper stays inside the **wrapper-only invariant** documented in
 `chad-readme.md` §7.1: cron messages are one-line invocations, slow work
@@ -136,7 +136,7 @@ rule moves into the source template.
 
 ## Cross-reference
 
-- [chad-devflow.md](https://github.com/tantodefi/supachad/blob/main/docs/operations/chad-devflow.md) — full wrapper catalog and cron schedules.
-- [chad-skills.md](https://github.com/tantodefi/supachad/blob/main/docs/operations/chad-skills.md) — what skills are registered and how.
-- [gbrain.md](https://github.com/tantodefi/supachad/blob/main/docs/operations/gbrain.md) — embedder + dream-cycle internals for loop 4.
-- [log-locations.md](https://github.com/tantodefi/supachad/blob/main/docs/operations/log-locations.md) — where each loop's output lands.
+- [chad-devflow.md](https://github.com/tantodefi/supachad/blob/chad-dev/docs/operations/chad-devflow.md) — full wrapper catalog and cron schedules.
+- [chad-skills.md](https://github.com/tantodefi/supachad/blob/chad-dev/docs/operations/chad-skills.md) — what skills are registered and how.
+- [gbrain.md](https://github.com/tantodefi/supachad/blob/chad-dev/docs/operations/gbrain.md) — embedder + dream-cycle internals for loop 4.
+- [log-locations.md](https://github.com/tantodefi/supachad/blob/chad-dev/docs/operations/log-locations.md) — where each loop's output lands.
