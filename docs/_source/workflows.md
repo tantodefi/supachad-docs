@@ -1,5 +1,5 @@
 <!-- AUTO-SYNCED FROM tantodefi/supachad — DO NOT EDIT HERE -->
-<!-- source: docs/operations/chad-workflows.md · ref: main · synced: 2026-10-15T01:59:39Z -->
+<!-- source: docs/operations/chad-workflows.md · ref: chad-dev · synced: 2026-10-24T11:05:15Z -->
 
 ---
 title:
@@ -32,7 +32,7 @@ This page enumerates the named workflow scenarios Chad is expected to handle end
 - **Chad's mailbox:** `supachad@proton.me`. The `email-check-cron` wrapper polls this inbox via `proton-tool`. Any auto-reply Chad sends has `From: supachad@proton.me`.
 - **Admin senders (auto-reply allowlist):** `tantodefi@proton.me`, `tjcooke@protonmail.com` / `tjcooke@pm.me`, plus `supachad@proton.me` itself. See `auto-actions.json` `email_reply` block.
 - **Inbound trigger:** every scenario in this doc starts as a Proton email landing in `supachad@proton.me`'s inbox. Future channels (GitHub mentions, Discord, dashboard `/premium`) plug into the same `chad-intake` contract.
-- **Out of scope here:** outbound-initiated work (cron-driven backups, gbrain dream, self-improve). Those are documented in [chad-devflow.md](https://github.com/tantodefi/supachad/blob/main/docs/operations/chad-devflow.md) §Cron pipeline.
+- **Out of scope here:** outbound-initiated work (cron-driven backups, gbrain dream, self-improve). Those are documented in [chad-devflow.md](https://github.com/tantodefi/supachad/blob/chad-dev/docs/operations/chad-devflow.md) §Cron pipeline.
 
 ## Workflow catalog
 
@@ -176,6 +176,6 @@ In rough dependency order — keep each step small and committable:
 ## Cross-reference
 
 - [EMAIL-POLICY.md](https://github.com/tantodefi/chad-state/blob/main/workspace/EMAIL-POLICY.md) — the in-sandbox routing rules each scenario depends on (lives in chad-state).
-- [chad-devflow.md](https://github.com/tantodefi/supachad/blob/main/docs/operations/chad-devflow.md) — wrapper catalog.
+- [chad-devflow.md](https://github.com/tantodefi/supachad/blob/chad-dev/docs/operations/chad-devflow.md) — wrapper catalog.
 - [auto-actions.json](https://github.com/NVIDIA/NemoClaw/blob/main/scripts/chad-cron-wrappers/auto-actions.template.json) — action-gate budgets and per-target overrides.
 - The `fitness` kind manifest at `.github/skills/chad-orchestrator/kinds/fitness.yaml` and `subagent-researcher` policy preset for the brain-first contract used by C1/C2.
