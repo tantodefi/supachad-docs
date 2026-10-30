@@ -44,27 +44,12 @@ docs/
 ├── operations.md         ← nine cron jobs, schedule rationale
 ├── reproducing.md        ← honest answer about what's needed
 ├── changelog.md          ← curated from git log
-├── _source/              ← optional: synced files from parent repo
 ├── assets/               ← chad-mark.svg, diagrams
 └── stylesheets/extra.css ← visual identity overrides
 ```
 
-Hand-authored pages (everything except `_source/`) are written for
-the public audience and stay under operator control. Synced files
-(via `scripts/sync-from-nemoclaw.sh`) are optional reference copies
-of source-of-truth docs from `tantodefi/NemoClaw`.
-
-## Sync (optional)
-
-```bash
-./scripts/sync-from-nemoclaw.sh                    # uses ../source if present
-./scripts/sync-from-nemoclaw.sh --ref chad-dev     # explicit ref
-NEMO_SOURCE=~/path/to/NemoClaw ./scripts/sync-from-nemoclaw.sh
-```
-
-Each synced file gets an "AUTO-SYNCED" header so readers know the
-canonical home and the sync timestamp. Hand-authored pages are not
-touched by sync.
+Every page is hand-authored for the public audience and stays under
+operator control. Internal runbooks are not mirrored here.
 
 ## Editing voice
 
