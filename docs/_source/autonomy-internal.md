@@ -1,5 +1,5 @@
 <!-- AUTO-SYNCED FROM tantodefi/supachad — DO NOT EDIT HERE -->
-<!-- source: docs/operations/chad-autonomy.md · ref: chad-dev · synced: 2026-10-24T11:05:15Z -->
+<!-- source: docs/operations/chad-autonomy.md · ref: chad-dev · synced: 2026-10-30T12:59:22Z -->
 
 ---
 title:
