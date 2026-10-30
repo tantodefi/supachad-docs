@@ -18,20 +18,12 @@ not a wall). The `mkdocs build --strict` step doubles as a PR check — broken
 nav, broken anchors, or undeclared assets fail the workflow before anything
 reaches Cloudflare.
 
-## Auto-sync from NemoClaw
+## No auto-sync
 
-A scheduled workflow (`sync-from-nemoclaw.yml`) pulls allowlisted source
-files from `tantodefi/NemoClaw#chad-dev` into `docs/_source/` daily at
-06:17 UTC. If anything changed, it opens or updates a single PR
-(`chore/sync-from-nemoclaw`). The PR auto-deploys a preview so you can
-inspect the rendered docs before merge.
-
-The allowlist lives in `scripts/sync-from-nemoclaw.sh`. Hand-authored
-pages (`intro.md`, `architecture.md`, `changelog.md`, …) are **not**
-touched by sync — those stay under operator authorship to keep the public
-voice consistent.
-
-To run it manually: GitHub → Actions → `sync-from-nemoclaw` → Run workflow.
+Every page here is hand-authored for the public. Internal runbooks and design
+notes stay in the source repo; they used to be mirrored into `docs/_source/`
+by a daily sync, which was removed after a 2026-10-30 scan read them to map
+the stack and pick target email addresses.
 
 ## One-time setup
 
@@ -88,12 +80,9 @@ gh pr merge --squash --delete-branch
 ```
 supachad-docs/
 ├── docs/                      ← hand-authored pages (this site's content)
-├── docs/_source/              ← auto-synced from NemoClaw (banner says so)
 ├── mkdocs.yml                 ← nav + theme config
-├── scripts/sync-from-nemoclaw.sh   ← the allowlist + sync logic
 └── .github/workflows/
-    ├── deploy.yml                  ← push/PR → CF Pages
-    └── sync-from-nemoclaw.yml      ← daily 06:17 UTC sync → PR
+    └── deploy.yml                  ← push/PR → CF Pages
 
 supachad-landing/
 ├── index.html                 ← single-page site, embedded CSS
@@ -109,5 +98,4 @@ supachad-landing/
 | `mkdocs build --strict` fails on PR | Broken internal link or undeclared image | Fix locally with `mkdocs serve --strict` |
 | Preview URL 404 right after deploy completes | CF Pages propagation lag (rare, ~30s) | Wait + refresh; or trigger `workflow_dispatch` |
 | `docs.supachad.com` resolves but shows old content | Cloudflare cache on the CDN | Purge cache from CF dashboard; default TTL is 1h for HTML |
-| Auto-sync PR opened with empty diff | `sync-from-nemoclaw.sh` modified file mtimes only | The "Check for changes" step gates on `git diff` content, so this shouldn't happen — file a bug if it does |
 | Preview URL stops working after a few weeks | CF Pages auto-retires deployments older than the latest 5 per branch | Re-trigger the workflow or push another commit |
