@@ -81,6 +81,10 @@ markdown_extensions:
 plugins:
   - search
 
+# Internal runbooks must never build into the public site, even if copied in.
+exclude_docs: |
+  _source/
+
 nav:
   - Home: index.md
   - Get started: get-started.md
