@@ -1,5 +1,5 @@
 <!-- AUTO-SYNCED FROM tantodefi/supachad — DO NOT EDIT HERE -->
-<!-- source: chad-readme.md · ref: chad-dev · synced: 2026-10-24T11:05:15Z -->
+<!-- source: chad-readme.md · ref: chad-dev · synced: 2026-10-30T12:59:22Z -->
 
 <!--
   SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
