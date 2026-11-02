@@ -85,8 +85,8 @@ for direct API callers without the header.
 **Per-operator routing (chad-shim/0.2+):** when the request carries
 `X-OpenWebUI-User-Email`, the shim:
 
-1. Slug-sanitizes the email local-part (e.g. `operator-1@example.com` →
-   `tantodefi`)
+1. Slug-sanitizes the email local-part (e.g. `alice@example.com` →
+   `alice`)
 2. Loads `/sandbox/.openclaw-data/identities/<slug>.md` (mtime-cached
    so edits land without a shim restart)
 3. Prepends the file as a tagged operator-context block to the user
